@@ -39,7 +39,7 @@ Este é um projeto de uma API RESTful desenvolvida com **Java 21** e **Spring Bo
 4. **CORS Habilitado:** Configuração do mecanismo de Cross-Origin Resource Sharing habilitada nos controllers apontando para o servidor local do ecossistema frontend (`http://localhost:5173/`).
 
 ### ⚠️ Lição Aprendida: O Perigo de `@Data` com `@Entity`
-Uma excelente decisão documentada no código foi o entendimento do impacto negativo do uso indiscriminado da anotação `@Data` do Lombok em classes anotadas com `@Entity`. Como o `@Data` gera implementações automáticas de `equals()`, `hashCode()` e `toString()`, ele tenta varrer recursivamente todas as propriedades da classe. Em relacionamentos bidirecionais ou preguiçosos (*Lazy*), isso acarreta em erros graves de **StackOverflow** (loops infinitos) ou na inicialização forçada de proxies, degradando a performance. *(Nota: Mantido de forma consciente no escopo deste laboratório simples, mas mapeado como ponto de melhoria para projetos corporativos).*
+Uma excelente decisão documentada no código (Classe Product em model) foi o entendimento do impacto negativo do uso indiscriminado da anotação `@Data` do Lombok em classes anotadas com `@Entity`. Como o `@Data` gera implementações automáticas de `equals()`, `hashCode()` e `toString()`, ele tenta varrer recursivamente todas as propriedades da classe. Em relacionamentos bidirecionais ou preguiçosos (*Lazy*), isso acarreta em erros graves de **StackOverflow** (loops infinitos) ou na inicialização forçada de proxies, degradando a performance. *(Nota: Erro cometido durante o projeto, mas que serviu de lição e mantido de forma consciente no escopo deste laboratório simples, mas mapeado como ponto de melhoria para projetos futuros).*
 
 ---
 
