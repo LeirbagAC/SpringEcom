@@ -1,4 +1,4 @@
-package com.gabriel.SpringEcom.model.dto;
+package com.gabriel.SpringEcom.dto;
 
 import java.util.List;
 

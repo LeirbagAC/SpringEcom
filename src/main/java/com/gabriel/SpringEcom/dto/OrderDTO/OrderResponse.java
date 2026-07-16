@@ -1,4 +1,4 @@
-package com.gabriel.SpringEcom.model.dto;
+package com.gabriel.SpringEcom.dto;
 
 import java.time.LocalDate;
 import java.util.List;
