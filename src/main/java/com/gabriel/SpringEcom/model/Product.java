@@ -2,15 +2,14 @@ package com.gabriel.SpringEcom.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Product {
@@ -27,11 +26,6 @@ public class Product {
     private Date releaseDate;
     private boolean productAvailable;
     private int stockQuantity;
-    //Para Imagens
-    private String imageName;
-    private String imageType;
-    @Lob //Large data
-    private byte[] imageData;
 
     public Product(int id) {
         this.id = id;

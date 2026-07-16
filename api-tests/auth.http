@@ -1,0 +1,24 @@
+### Realizar Login e Capturar o Token JWT
+# @name login
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{auth_user}}",
+  "password": "{{auth_pass}}"
+}
+
+> {%
+    if (response.status === 200 && response.body) {
+        const token = response.body.token;
+
+        if (token) {
+            client.global.set("jwt_token", token);
+            client.log("Login realizado com sucesso. JWT salvo em jwt_token.");
+        } else {
+            client.log("Login retornou 200, mas o campo token não veio na resposta.");
+        }
+    } else {
+        client.log("Login falhou. HTTP status: " + response.status);
+    }
+%}

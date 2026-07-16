@@ -1,9 +1,9 @@
 package com.gabriel.SpringEcom.controller;
 
-import com.gabriel.SpringEcom.model.dto.OrderRequest;
-import com.gabriel.SpringEcom.model.dto.OrderResponse;
+import com.gabriel.SpringEcom.dto.OrderDTO.OrderRequest;
+import com.gabriel.SpringEcom.dto.OrderDTO.OrderResponse;
 import com.gabriel.SpringEcom.service.OrderService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,12 +11,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
-@CrossOrigin("http://localhost:5173/")
+@RequiredArgsConstructor
 public class OrderController {
-    
-    @Autowired
-    private OrderService orderService;
+
+    private final OrderService orderService;
 
     @PostMapping("orders/place")
     public ResponseEntity<OrderResponse> placeOrder(@RequestBody OrderRequest orderRequest) {

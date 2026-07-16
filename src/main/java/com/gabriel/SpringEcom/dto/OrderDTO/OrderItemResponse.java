@@ -1,4 +1,4 @@
-package com.gabriel.SpringEcom.dto;
+package com.gabriel.SpringEcom.dto.OrderDTO;
 
 import java.math.BigDecimal;
 

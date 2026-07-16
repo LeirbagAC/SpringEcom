@@ -2,8 +2,7 @@ package com.gabriel.SpringEcom.controller;
 
 import com.gabriel.SpringEcom.model.Product;
 import com.gabriel.SpringEcom.service.ProductService;
-import com.sun.net.httpserver.HttpsServer;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,18 +12,16 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
-@CrossOrigin("http://localhost:5173/")
+@RequiredArgsConstructor
 public class ProductController {
 
-    @Autowired
-    private ProductService productService;
+    private final ProductService productService;
 
     @PostMapping("/product")
-    public ResponseEntity<?> addProduct(@RequestPart Product product, @RequestPart MultipartFile imageFile) {
-        Product savedProduct = null;
+    public ResponseEntity<?> addProduct(@RequestBody Product product) {
+        Product savedProduct;
         try {
-            savedProduct = productService.addProduct(product, imageFile);
+            savedProduct = productService.addProduct(product);
             return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
         } catch (IOException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -63,16 +60,16 @@ public class ProductController {
         }
     }
 
-    @GetMapping("/product/{id}/image")
-    public ResponseEntity<byte[]> getImageByProductId(@PathVariable int id) {
-        Product product = productService.getProductById(id);
-
-        if(product != null) {
-            return new ResponseEntity<>(product.getImageData(), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
+//    @GetMapping("/product/{id}/image")
+//    public ResponseEntity<byte[]> getImageByProductId(@PathVariable int id) {
+//        Product product = productService.getProductById(id);
+//
+//        if(product != null) {
+//            return new ResponseEntity<>(product.getImageData(), HttpStatus.OK);
+//        } else {
+//            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//        }
+//    }
 
     @DeleteMapping("/product/{id}")
     public ResponseEntity<Product> delete(@PathVariable int id) {

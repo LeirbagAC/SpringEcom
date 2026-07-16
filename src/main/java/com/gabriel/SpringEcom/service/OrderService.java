@@ -3,13 +3,13 @@ package com.gabriel.SpringEcom.service;
 import com.gabriel.SpringEcom.model.Order;
 import com.gabriel.SpringEcom.model.OrderItem;
 import com.gabriel.SpringEcom.model.Product;
-import com.gabriel.SpringEcom.model.dto.OrderItemRequest;
-import com.gabriel.SpringEcom.model.dto.OrderItemResponse;
-import com.gabriel.SpringEcom.model.dto.OrderRequest;
-import com.gabriel.SpringEcom.model.dto.OrderResponse;
+import com.gabriel.SpringEcom.dto.OrderDTO.OrderItemRequest;
+import com.gabriel.SpringEcom.dto.OrderDTO.OrderItemResponse;
+import com.gabriel.SpringEcom.dto.OrderDTO.OrderRequest;
+import com.gabriel.SpringEcom.dto.OrderDTO.OrderResponse;
 import com.gabriel.SpringEcom.repo.OrderRepo;
 import com.gabriel.SpringEcom.repo.ProductRepo;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,12 +20,11 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class OrderService {
 
-    @Autowired
-    private OrderRepo orderRepo;
-    @Autowired
-    private ProductRepo productRepo;
+    private final OrderRepo orderRepo;
+    private final ProductRepo productRepo;
 
     public OrderResponse placeOrder(OrderRequest request) {
 

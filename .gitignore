@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### IntelliJ HTTP Client Env Files
+*.env.json
