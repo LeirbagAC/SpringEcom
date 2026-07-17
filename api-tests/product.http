@@ -1,11 +1,33 @@
-### Criar um novo produto (Rota Protegida)
+# @name listarProdutos
+GET {{host}}/products
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+# @name buscarProdutoPorId
+GET {{host}}/product/6
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+# @name buscarProdutoPorNome
+GET {{host}}/products/search?keyword=ps5
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+# @name deleteProduto
+DELETE {{host}}/product/2
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
 # @name criarProduto
 POST {{host}}/product
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
 {
-  "product": {
     "name": "ps5 pro",
     "description": "video game",
     "brand": "sony",
@@ -14,5 +36,21 @@ Authorization: Bearer {{jwt_token}}
     "releaseDate": "2026-07-16",
     "productAvailable": true,
     "stockQuantity": 13
-  }
+}
+
+###
+# @name updateProduto
+PUT {{host}}/product/1
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "name": "ps5 pro update",
+  "description": "video game",
+  "brand": "sony",
+  "price": 5300,
+  "category": "eletrônico",
+  "releaseDate": "2026-07-16",
+  "productAvailable": true,
+  "stockQuantity": 13
 }
