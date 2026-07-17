@@ -29,9 +29,9 @@ public class ProductController {
     }
 
     @PutMapping("/product/{id}")
-    public ResponseEntity<?> updateProduct(@PathVariable int id, @RequestPart Product product, @RequestPart MultipartFile imageFile) {
+    public ResponseEntity<?> updateProduct(@PathVariable int id, @RequestBody Product product) {
         try{
-            Product updatedProduct = productService.updatedProduct(id, product, imageFile);
+            Product updatedProduct = productService.updatedProduct(id, product);
 
             if(updatedProduct != null) {
                 return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
@@ -82,7 +82,7 @@ public class ProductController {
         }
     }
 
-    @GetMapping("/products/{keyword}")
+    @GetMapping("/products/search")
     public ResponseEntity<List<Product>> searchProducts(@RequestParam String keyword) {
         List<Product> products = productService.searchProducts(keyword);
 

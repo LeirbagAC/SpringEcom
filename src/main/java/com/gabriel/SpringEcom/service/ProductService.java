@@ -28,7 +28,7 @@ public class ProductService {
         return productRepo.save(product);
     }
 
-    public Product updatedProduct(int id, Product product, MultipartFile image) throws IOException {
+    public Product updatedProduct(int id, Product product) throws IOException {
         if(!productRepo.existsById(id)) {
             return null;
         }
