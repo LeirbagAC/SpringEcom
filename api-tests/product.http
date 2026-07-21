@@ -5,7 +5,7 @@ Authorization: Bearer {{jwt_token}}
 
 ###
 # @name buscarProdutoPorId
-GET {{host}}/product/6
+GET {{host}}/product/4
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
@@ -21,7 +21,7 @@ DELETE {{host}}/product/2
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
-###
+### Adicionar produto
 # @name criarProduto
 POST {{host}}/product
 Content-Type: application/json
@@ -40,12 +40,12 @@ Authorization: Bearer {{jwt_token}}
 
 ###
 # @name updateProduto
-PUT {{host}}/product/1
+PUT {{host}}/product/4
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
 {
-  "name": "ps5 pro update",
+  "name": "Teste put 4",
   "description": "video game",
   "brand": "sony",
   "price": 5300,
