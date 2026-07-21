@@ -2,9 +2,11 @@ package com.gabriel.SpringEcom.controller;
 
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductDTO;
 import com.gabriel.SpringEcom.model.Product;
+import com.gabriel.SpringEcom.model.ProductImage;
 import com.gabriel.SpringEcom.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,13 +37,29 @@ public class ProductController {
     }
 
     @PostMapping("/product")
-    public ResponseEntity<?> addProduct(@RequestBody Product product) {
-        Product savedProduct;
-        try {
-            savedProduct = productService.addProduct(product);
-            return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
+    public ResponseEntity<Product> addProduct(@RequestBody Product product) {
+        Product savedProduct = productService.addProduct(product);
+        return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
+    }
+
+    @PostMapping(value = "/product/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> addProductImage(@PathVariable int id, @RequestParam("file") MultipartFile imageFile) {
+        try{
+            ProductImage imageSaved =  productService.addProductImage(id, imageFile);
+            return new ResponseEntity<>(imageSaved, HttpStatus.CREATED);
         } catch (IOException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/product/images/{id}")
+    public ResponseEntity<List<ProductImage>> getProductImages(@PathVariable Long id) {
+        ProductImage images = productService.getProductImages(id);
+
+        if(images != null) {
+            return ResponseEntity.ok(List.of(images));
+        } else {
+            return ResponseEntity.notFound().build();
         }
     }
 

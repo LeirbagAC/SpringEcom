@@ -1,11 +1,15 @@
 package com.gabriel.SpringEcom.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Getter
@@ -16,7 +20,7 @@ public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
     private String name;
     private String description;
     private String brand;
@@ -27,14 +31,7 @@ public class Product {
     private boolean productAvailable;
     private int stockQuantity;
 
-    public Product(int id) {
-        this.id = id;
-    }
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL,  orphanRemoval = true)
+    @JsonManagedReference //Sem isso e o JsonIgore do lado da imagem vai ficar um loop infinito
+    private List<ProductImage> images = new ArrayList<>();
 }
-
-/*
-                                                        IMPORTANTE!!
-O Perigo na Vida Real: Nunca se usa @Data junto com @Entity! O problema está no @EqualsAndHashCode e no @ToString que o @Data gera.
-Eles vão tentar ler todos os atributos da classe. Se a classe tiver relacionamentos com outras tabelas (como um Cliente que tem uma lista de Pedidos),
-o Lombok vai tentar ler os pedidos. Isso pode causar o infame erro de StackOverflow (loop infinito) ou forçar o banco de dados a fazer dezenas de consultas desnecessárias,
-matando a performance da sua aplicação.*/

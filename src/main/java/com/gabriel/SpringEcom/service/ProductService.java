@@ -4,6 +4,7 @@ import com.gabriel.SpringEcom.dto.ProductDTO.ProductDTO;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductImageDTO;
 import com.gabriel.SpringEcom.model.Product;
 import com.gabriel.SpringEcom.model.ProductImage;
+import com.gabriel.SpringEcom.repo.ProductImageRepo;
 import com.gabriel.SpringEcom.repo.ProductRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import java.util.List;
 public class ProductService {
 
     private final ProductRepo productRepo;
+    private final ProductImageRepo productImageRepo;
 
     public List<ProductDTO> getAllProducts() {
         return productRepo.findAll()
@@ -33,6 +35,22 @@ public class ProductService {
 
     public Product addProduct(Product product){
         return productRepo.save(product);
+    }
+
+    public ProductImage addProductImage (int productId, MultipartFile image) throws IOException {
+        Product product  = productRepo.findById(productId).orElseThrow(() -> new RuntimeException("Produto não encontrado " + productId));
+
+        ProductImage productImage = new ProductImage();
+        productImage.setImageName(image.getOriginalFilename());
+        productImage.setImageType(image.getContentType());
+        productImage.setImageData(image.getBytes());
+        productImage.setProduct(product);
+
+        return productImageRepo.save(productImage);
+    }
+
+    public ProductImage getProductImages(Long id) {
+        return productImageRepo.findById(id).orElse(null);
     }
 
     public Product updatedProduct(int id, Product product) throws IOException {
