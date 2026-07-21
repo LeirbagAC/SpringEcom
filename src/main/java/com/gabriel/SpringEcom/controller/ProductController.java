@@ -1,5 +1,6 @@
 package com.gabriel.SpringEcom.controller;
 
+import com.gabriel.SpringEcom.dto.ProductDTO.ProductDTO;
 import com.gabriel.SpringEcom.model.Product;
 import com.gabriel.SpringEcom.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,22 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+
+    @GetMapping("/products")
+    public ResponseEntity<List<ProductDTO>> getProducts() {
+        return new ResponseEntity<>(productService.getAllProducts(), HttpStatus.ACCEPTED);
+    }
+
+    @GetMapping("/product/{id}")
+    public ResponseEntity<ProductDTO> getProductById(@PathVariable int id) {
+        ProductDTO product = productService.getProductById(id);
+
+        if(product != null) {
+            return new ResponseEntity<>(product, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 
     @PostMapping("/product")
     public ResponseEntity<?> addProduct(@RequestBody Product product) {
@@ -44,32 +61,12 @@ public class ProductController {
         }
     }
 
-    @GetMapping("/products")
-    public ResponseEntity<List<Product>> getProducts() {
-        return new ResponseEntity<>(productService.getAllProducts(), HttpStatus.ACCEPTED);
+    @GetMapping("/products/search")
+    public ResponseEntity<List<ProductDTO>> searchProducts(@RequestParam String keyword) {
+        List<ProductDTO> products = productService.searchProducts(keyword);
+
+        return new ResponseEntity<>(products, HttpStatus.OK);
     }
-
-    @GetMapping("/product/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable int id) {
-        Product product = productService.getProductById(id);
-
-        if(product != null) {
-            return new ResponseEntity<>(product, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
-
-//    @GetMapping("/product/{id}/image")
-//    public ResponseEntity<byte[]> getImageByProductId(@PathVariable int id) {
-//        Product product = productService.getProductById(id);
-//
-//        if(product != null) {
-//            return new ResponseEntity<>(product.getImageData(), HttpStatus.OK);
-//        } else {
-//            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//        }
-//    }
 
     @DeleteMapping("/product/{id}")
     public ResponseEntity<Product> delete(@PathVariable int id) {
@@ -81,12 +78,4 @@ public class ProductController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-
-    @GetMapping("/products/search")
-    public ResponseEntity<List<Product>> searchProducts(@RequestParam String keyword) {
-        List<Product> products = productService.searchProducts(keyword);
-
-        return new ResponseEntity<>(products, HttpStatus.OK);
-    }
-
 }
