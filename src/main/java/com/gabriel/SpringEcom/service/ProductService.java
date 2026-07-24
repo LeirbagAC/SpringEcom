@@ -1,6 +1,7 @@
 package com.gabriel.SpringEcom.service;
 
-import com.gabriel.SpringEcom.dto.ProductDTO.ProductDTO;
+import com.gabriel.SpringEcom.dto.ProductDTO.ProductRequestDTO;
+import com.gabriel.SpringEcom.dto.ProductDTO.ProductResponseDTO;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductImageDTO;
 import com.gabriel.SpringEcom.model.Product;
 import com.gabriel.SpringEcom.model.ProductImage;
@@ -22,47 +23,58 @@ public class ProductService {
     private final ProductImageRepo productImageRepo;
 
     @Transactional(readOnly = true)
-    public List<ProductDTO> getAllProducts() {
+    public List<ProductResponseDTO> getAllProducts() {
         return productRepo.findAll()
                 .stream()
                 .map(this::toDTO)
                 .toList();
     }
 
-    public ProductDTO getProductById(Integer id) {
+    public ProductResponseDTO getProductById(Integer id) {
         Product product = productRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
         return toDTO(product);
     }
 
-    public Product addProduct(Product product){
-        return productRepo.save(product);
+    @Transactional
+    public ProductResponseDTO addProduct(ProductRequestDTO request) {
+        Product product = new Product();
+        applyRequestToProduct(product, request);
+        product.setReleaseDate(java.time.LocalDate.now());
+
+        Product savedProduct = productRepo.save(product);
+        return toDTO(savedProduct);
     }
 
-    public ProductImage addProductImage (int productId, MultipartFile image) throws IOException {
-        Product product  = productRepo.findById(productId).orElseThrow(() -> new RuntimeException("Produto não encontrado " + productId));
+    @Transactional
+    public ProductImageDTO addProductImage (int productId, MultipartFile image) throws IOException {
+        Product product  = productRepo.findById(productId).orElseThrow(() -> new RuntimeException("Produto não encontrado: " + productId));
 
         ProductImage productImage = new ProductImage();
+
         productImage.setImageName(image.getOriginalFilename());
         productImage.setImageType(image.getContentType());
         productImage.setImageData(image.getBytes());
         productImage.setProduct(product);
 
-        return productImageRepo.save(productImage);
+        ProductImage savedProductImage = productImageRepo.save(productImage);
+        return toDTOImage(savedProductImage);
     }
 
-    public ProductImage getProductImages(Long id) {
-        return productImageRepo.findById(id).orElse(null);
+    public ProductImageDTO getProductImages(Long imageId) {
+        ProductImage productImage = productImageRepo.findById(imageId).orElseThrow(() -> new RuntimeException("Imagem não encontrada: " + imageId));
+        return toDTOImage(productImage);
     }
 
-    public Product updatedProduct(int id, Product product) throws IOException {
-        if(!productRepo.existsById(id)) {
-            return null;
-        }
-        product.setId(id);
-        return productRepo.save(product);
+    @Transactional
+    public ProductResponseDTO updateProduct(int id, ProductRequestDTO productRequest) {
+        Product product  = productRepo.findById(id).orElseThrow(() -> new RuntimeException("Produto não encontrado: " + id));
+        applyRequestToProduct(product, productRequest);
+        Product updatedProduct = productRepo.save(product); //O save() aqui é redundante por conta do transaction o Dirty Checking já faria o update, mas para fins educacionais preferir deixar.
+        return toDTO(updatedProduct);
     }
 
+    @Transactional
     public Product delete(int id) {
         Product product = productRepo.findById(id).orElse(null);
 
@@ -73,25 +85,26 @@ public class ProductService {
         return product;
     }
 
-    public List<ProductDTO> searchProducts(String keyword) {
+    @Transactional(readOnly = true)
+    public List<ProductResponseDTO> searchProducts(String keyword) {
         return productRepo.searchProducts(keyword)
                 .stream()
                 .map(this::toDTO)
                 .toList();
     }
 
-    //Método privado auxiliar
-    private ProductDTO toDTO(Product product) {
+    // --- Métodos privados auxiliar na conversão dos DTOs
+    private ProductResponseDTO toDTO(Product product) {
         List<ProductImageDTO> imageDTOs = product.getImages().stream().map(image ->
                 new ProductImageDTO(
                         image.getId(),
                         image.getImageName(),
                         image.getImageType(),
-                        "http://localhost:8080/product/images/" + image.getId()
+                        "http://localhost:8080/product/image/" + image.getId()
                 )
         ).toList();
 
-        return new ProductDTO(
+        return new ProductResponseDTO(
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
@@ -99,5 +112,26 @@ public class ProductService {
                 product.isProductAvailable(),
                 imageDTOs
         );
+    }
+
+    private ProductImageDTO toDTOImage(ProductImage savedProductImage) {
+        return new ProductImageDTO(
+                savedProductImage.getId(),
+                savedProductImage.getImageName(),
+                savedProductImage.getImageType(),
+                "http://localhost:8080/product/image/" + savedProductImage.getId()
+        );
+    }
+
+    //Funçao criada para ajuda na hora de atualizar o produto, para não precisar ficar setando cada campo manualmente
+    //Provavelmente não apenasa esse método, mas também os outros podem ser refatorada com alguma lib (ModelMapper ou MapStruct) para fazer isso de forma automática, mas por enquanto vai assim
+    private void applyRequestToProduct(Product product, ProductRequestDTO request) {
+        product.setName(request.name());
+        product.setDescription(request.description());
+        product.setBrand(request.brand());
+        product.setPrice(request.price());
+        product.setCategory(request.category());
+        product.setProductAvailable(request.productAvailable());
+        product.setStockQuantity(request.stockQuantity());
     }
 }

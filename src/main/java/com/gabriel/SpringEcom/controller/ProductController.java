@@ -1,9 +1,11 @@
 package com.gabriel.SpringEcom.controller;
 
-import com.gabriel.SpringEcom.dto.ProductDTO.ProductDTO;
+import com.gabriel.SpringEcom.dto.ProductDTO.ProductImageDTO;
+import com.gabriel.SpringEcom.dto.ProductDTO.ProductRequestDTO;
+import com.gabriel.SpringEcom.dto.ProductDTO.ProductResponseDTO;
 import com.gabriel.SpringEcom.model.Product;
-import com.gabriel.SpringEcom.model.ProductImage;
 import com.gabriel.SpringEcom.service.ProductService;
+import com.gabriel.SpringEcom.repo.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,15 +21,16 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+    private final UserRepository userRepository;
 
     @GetMapping("/products")
-    public ResponseEntity<List<ProductDTO>> getProducts() {
+    public ResponseEntity<List<ProductResponseDTO>> getProducts() {
         return new ResponseEntity<>(productService.getAllProducts(), HttpStatus.ACCEPTED);
     }
 
     @GetMapping("/product/{id}")
-    public ResponseEntity<ProductDTO> getProductById(@PathVariable int id) {
-        ProductDTO product = productService.getProductById(id);
+    public ResponseEntity<ProductResponseDTO> getProductById(@PathVariable int id) {
+        ProductResponseDTO product = productService.getProductById(id);
 
         if(product != null) {
             return new ResponseEntity<>(product, HttpStatus.OK);
@@ -37,24 +40,23 @@ public class ProductController {
     }
 
     @PostMapping("/product")
-    public ResponseEntity<Product> addProduct(@RequestBody Product product) {
-        Product savedProduct = productService.addProduct(product);
+    public ResponseEntity<ProductResponseDTO> addProduct(@RequestBody ProductRequestDTO productRequest) {
+        ProductResponseDTO savedProduct = productService.addProduct(productRequest);
         return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
     }
 
     @PostMapping(value = "/product/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> addProductImage(@PathVariable int id, @RequestParam("file") MultipartFile imageFile) {
+    public ResponseEntity<ProductImageDTO> addProductImage(@PathVariable int id, @RequestParam("file") MultipartFile imageFile) {
         try{
-            ProductImage imageSaved =  productService.addProductImage(id, imageFile);
+            ProductImageDTO imageSaved =  productService.addProductImage(id, imageFile);
             return new ResponseEntity<>(imageSaved, HttpStatus.CREATED);
         } catch (IOException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
     @GetMapping("/product/images/{id}")
-    public ResponseEntity<List<ProductImage>> getProductImages(@PathVariable Long id) {
-        ProductImage images = productService.getProductImages(id);
+    public ResponseEntity<List<ProductImageDTO>> getProductImages(@PathVariable Long id) {
+        ProductImageDTO images = productService.getProductImages(id);
 
         if(images != null) {
             return ResponseEntity.ok(List.of(images));
@@ -64,24 +66,14 @@ public class ProductController {
     }
 
     @PutMapping("/product/{id}")
-    public ResponseEntity<?> updateProduct(@PathVariable int id, @RequestBody Product product) {
-        try{
-            Product updatedProduct = productService.updatedProduct(id, product);
-
-            if(updatedProduct != null) {
-                return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>("Produto não encontrado", HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-
-        } catch (IOException e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable int id, @RequestBody ProductRequestDTO productRequest) {
+        ProductResponseDTO updatedProduct = productService.updateProduct(id, productRequest);
+        return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
     }
 
     @GetMapping("/products/search")
-    public ResponseEntity<List<ProductDTO>> searchProducts(@RequestParam String keyword) {
-        List<ProductDTO> products = productService.searchProducts(keyword);
+    public ResponseEntity<List<ProductResponseDTO>> searchProducts(@RequestParam String keyword) {
+        List<ProductResponseDTO> products = productService.searchProducts(keyword);
 
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
