@@ -75,14 +75,11 @@ public class ProductService {
     }
 
     @Transactional
-    public Product delete(int id) {
-        Product product = productRepo.findById(id).orElse(null);
+    public void delete(int id) {
+        Product product = productRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Produto não encontrado: " + id));
 
-        if(product != null) {
-            productRepo.deleteById(id);
-        }
-
-        return product;
+        productRepo.delete(product);
     }
 
     @Transactional(readOnly = true)

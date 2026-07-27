@@ -3,9 +3,7 @@ package com.gabriel.SpringEcom.controller;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductImageDTO;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductRequestDTO;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductResponseDTO;
-import com.gabriel.SpringEcom.model.Product;
 import com.gabriel.SpringEcom.service.ProductService;
-import com.gabriel.SpringEcom.repo.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -21,7 +19,6 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
-    private final UserRepository userRepository;
 
     @GetMapping("/products")
     public ResponseEntity<List<ProductResponseDTO>> getProducts() {
@@ -79,13 +76,8 @@ public class ProductController {
     }
 
     @DeleteMapping("/product/{id}")
-    public ResponseEntity<Product> delete(@PathVariable int id) {
-        Product deletedProduct = productService.delete(id);
-
-        if(deletedProduct != null) {
-            return new ResponseEntity<>(deletedProduct, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<Void> delete(@PathVariable int id) {
+        productService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }
