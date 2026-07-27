@@ -3,11 +3,15 @@ package com.gabriel.SpringEcom.service;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductRequestDTO;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductResponseDTO;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductImageDTO;
+import com.gabriel.SpringEcom.dto.UserDTO.UserResponseDTO;
 import com.gabriel.SpringEcom.model.Product;
 import com.gabriel.SpringEcom.model.ProductImage;
+import com.gabriel.SpringEcom.model.User;
 import com.gabriel.SpringEcom.repo.ProductImageRepo;
 import com.gabriel.SpringEcom.repo.ProductRepo;
+import com.gabriel.SpringEcom.repo.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,6 +25,7 @@ public class ProductService {
 
     private final ProductRepo productRepo;
     private final ProductImageRepo productImageRepo;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public List<ProductResponseDTO> getAllProducts() {
@@ -38,9 +43,15 @@ public class ProductService {
 
     @Transactional
     public ProductResponseDTO addProduct(ProductRequestDTO request) {
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado: " + userEmail));
+
         Product product = new Product();
         applyRequestToProduct(product, request);
         product.setReleaseDate(java.time.LocalDate.now());
+        product.setUser(user);
 
         Product savedProduct = productRepo.save(product);
         return toDTO(savedProduct);
@@ -70,7 +81,7 @@ public class ProductService {
     public ProductResponseDTO updateProduct(int id, ProductRequestDTO productRequest) {
         Product product  = productRepo.findById(id).orElseThrow(() -> new RuntimeException("Produto não encontrado: " + id));
         applyRequestToProduct(product, productRequest);
-        Product updatedProduct = productRepo.save(product); //O save() aqui é redundante por conta do transaction o Dirty Checking já faria o update, mas para fins educacionais preferir deixar.
+        Product updatedProduct = productRepo.save(product); //O save() aqui é redundante por conta do transaction, o Dirty Checking já faria o update, mas para fins educacionais preferir deixar.
         return toDTO(updatedProduct);
     }
 
@@ -107,7 +118,16 @@ public class ProductService {
                 product.getDescription(),
                 product.getPrice(),
                 product.isProductAvailable(),
+                toDTOUser(product.getUser()),
                 imageDTOs
+        );
+    }
+
+    private UserResponseDTO toDTOUser(User user) {
+        return new UserResponseDTO(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail()
         );
     }
 
