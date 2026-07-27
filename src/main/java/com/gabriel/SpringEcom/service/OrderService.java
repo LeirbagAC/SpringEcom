@@ -40,7 +40,7 @@ public class OrderService {
         for(OrderItemRequest itemReq : request.items()) {
 
             Product product = productRepo.findById(itemReq.productId())
-                    .orElseThrow(() -> new RuntimeException("Product not found"));
+                    .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
 
             product.setStockQuantity(product.getStockQuantity() - itemReq.quantity());
             productRepo.save(product);
