@@ -2,10 +2,12 @@ package com.gabriel.SpringEcom.controller;
 
 import com.gabriel.SpringEcom.dto.OrderDTO.OrderRequest;
 import com.gabriel.SpringEcom.dto.OrderDTO.OrderResponse;
+import com.gabriel.SpringEcom.security.UserPrincipal;
 import com.gabriel.SpringEcom.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,8 +19,8 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("orders/place")
-    public ResponseEntity<OrderResponse> placeOrder(@RequestBody OrderRequest orderRequest) {
-        OrderResponse orderResponse = orderService.placeOrder(orderRequest);
+    public ResponseEntity<OrderResponse> placeOrder(@RequestBody OrderRequest orderRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        OrderResponse orderResponse = orderService.placeOrder(orderRequest, userPrincipal.getUser());
         return new ResponseEntity<>(orderResponse, HttpStatus.CREATED);
     }
 

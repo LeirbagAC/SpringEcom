@@ -1,5 +1,6 @@
 package com.gabriel.SpringEcom.service;
 
+import com.gabriel.SpringEcom.dto.ProductDTO.ProductRequestDTO;
 import com.gabriel.SpringEcom.model.Order;
 import com.gabriel.SpringEcom.model.OrderItem;
 import com.gabriel.SpringEcom.model.Product;
@@ -7,8 +8,10 @@ import com.gabriel.SpringEcom.dto.OrderDTO.OrderItemRequest;
 import com.gabriel.SpringEcom.dto.OrderDTO.OrderItemResponse;
 import com.gabriel.SpringEcom.dto.OrderDTO.OrderRequest;
 import com.gabriel.SpringEcom.dto.OrderDTO.OrderResponse;
+import com.gabriel.SpringEcom.model.User;
 import com.gabriel.SpringEcom.repo.OrderRepo;
 import com.gabriel.SpringEcom.repo.ProductRepo;
+import com.gabriel.SpringEcom.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,15 +29,17 @@ public class OrderService {
     private final OrderRepo orderRepo;
     private final ProductRepo productRepo;
 
-    public OrderResponse placeOrder(OrderRequest request) {
-
+    @Transactional
+    public OrderResponse placeOrder(OrderRequest request, User loggedUser) {
         Order order = new Order();
         String orderId = "ORD" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         order.setOrderId(orderId);
-        order.setCustomName(request.customerName());
-        order.setEmail(request.email());
-        order.setStatus("PLACED");
+        order.setEmail(loggedUser.getEmail());
+        order.setCustomName(loggedUser.getUsername());
+        order.setStatus("Pedido Feito!");
         order.setOrderDate(LocalDate.now());
+
+        order.setUser(loggedUser);
 
         List<OrderItem> orderItems = new ArrayList<>();
         for(OrderItemRequest itemReq : request.items()) {
@@ -42,8 +47,12 @@ public class OrderService {
             Product product = productRepo.findById(itemReq.productId())
                     .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
 
+            if(product.getStockQuantity() < itemReq.quantity()) {
+                throw new RuntimeException("Estoque insuficiente para o produto: " + product.getName());
+            }
+
             product.setStockQuantity(product.getStockQuantity() - itemReq.quantity());
-            productRepo.save(product);
+//            productRepo.save(product); Novamente, isso é redundante por conta do Dirty Checking causado pelo Transactional
 
             OrderItem orderItem = OrderItem.builder()
                     .product(product)
@@ -73,7 +82,6 @@ public class OrderService {
     //Para converte para o formato do DTO
     private OrderResponse mapToOrderResponse(Order order) {
         List<OrderItemResponse> itemResponses = new ArrayList<>();
-
         if (order.getOrderItems() != null) {
             for (OrderItem item : order.getOrderItems()) {
                 if (item.getProduct() == null) {

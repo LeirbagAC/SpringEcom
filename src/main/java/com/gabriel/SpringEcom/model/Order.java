@@ -25,4 +25,11 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User user;
+
+//    O padrão do @ManyToOne é EAGER, se eu não tivesse colocado o fetch = FetchType.LAZY no Order,
+//    toda vez que eu listasse 100 pedidos, o Hibernate poderia fazer 1 consulta para os pedidos + 100 consultas extras,
+//    uma para cada usuário. Isso é o famoso e temido Problema das N+1 Consultas
+
 }
