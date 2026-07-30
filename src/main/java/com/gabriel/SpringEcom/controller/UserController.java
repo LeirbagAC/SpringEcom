@@ -4,7 +4,7 @@ import com.gabriel.SpringEcom.dto.UserDTO.AuthResponse;
 import com.gabriel.SpringEcom.dto.UserDTO.LoginRequest;
 import com.gabriel.SpringEcom.dto.UserDTO.RegisterRequest;
 import com.gabriel.SpringEcom.model.User;
-import com.gabriel.SpringEcom.repo.UserRepository;
+import com.gabriel.SpringEcom.repo.UserRepo;
 import com.gabriel.SpringEcom.security.JwtService;
 import com.gabriel.SpringEcom.security.UserPrincipal;
 import com.gabriel.SpringEcom.service.UserService;
@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserRepository userRepository;
+    private final UserRepo userRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;

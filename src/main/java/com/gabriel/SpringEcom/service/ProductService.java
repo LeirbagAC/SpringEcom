@@ -9,7 +9,7 @@ import com.gabriel.SpringEcom.model.ProductImage;
 import com.gabriel.SpringEcom.model.User;
 import com.gabriel.SpringEcom.repo.ProductImageRepo;
 import com.gabriel.SpringEcom.repo.ProductRepo;
-import com.gabriel.SpringEcom.repo.UserRepository;
+import com.gabriel.SpringEcom.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ public class ProductService {
 
     private final ProductRepo productRepo;
     private final ProductImageRepo productImageRepo;
-    private final UserRepository userRepository;
+    private final UserRepo userRepo;
 
     @Transactional(readOnly = true)
     public List<ProductResponseDTO> getAllProducts() {
@@ -45,7 +45,7 @@ public class ProductService {
     public ProductResponseDTO addProduct(ProductRequestDTO request) {
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        User user = userRepository.findByEmail(userEmail)
+        User user = userRepo.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado: " + userEmail));
 
         Product product = new Product();

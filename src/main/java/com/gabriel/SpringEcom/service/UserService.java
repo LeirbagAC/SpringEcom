@@ -1,7 +1,7 @@
 package com.gabriel.SpringEcom.service;
 
 import com.gabriel.SpringEcom.model.User;
-import com.gabriel.SpringEcom.repo.UserRepository;
+import com.gabriel.SpringEcom.repo.UserRepo;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UserRepository userRepository;
+    private final UserRepo userRepository;
 
     @Transactional
     public void deleteUser(Long id) {
