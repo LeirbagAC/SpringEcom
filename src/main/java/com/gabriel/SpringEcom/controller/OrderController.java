@@ -1,6 +1,5 @@
 package com.gabriel.SpringEcom.controller;
 
-import com.gabriel.SpringEcom.dto.OrderDTO.OrderRequest;
 import com.gabriel.SpringEcom.dto.OrderDTO.OrderResponse;
 import com.gabriel.SpringEcom.security.UserPrincipal;
 import com.gabriel.SpringEcom.service.OrderService;
@@ -19,8 +18,8 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("orders/place")
-    public ResponseEntity<OrderResponse> placeOrder(@RequestBody OrderRequest orderRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        OrderResponse orderResponse = orderService.placeOrder(orderRequest, userPrincipal.getUser());
+    public ResponseEntity<OrderResponse> placeOrder(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+        OrderResponse orderResponse = orderService.placeOrder(userPrincipal.getUser());
         return new ResponseEntity<>(orderResponse, HttpStatus.CREATED);
     }
 
