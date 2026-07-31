@@ -38,6 +38,9 @@ public class CartService {
 
     @Transactional
     public CartResponseDTO addProduct(CartItemRequestDTO request, User loggedUser) {
+        if (request.quantity() <= 0) {
+            throw new RuntimeException("Quantidade deve ser maior que zero.");
+        }
 
         //Busca o carrinho do usuário, se não existe ele cria um.
         Cart cart = cartRepo.findByUser(loggedUser).orElseGet(() -> {
