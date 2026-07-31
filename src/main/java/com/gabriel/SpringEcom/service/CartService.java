@@ -9,15 +9,13 @@ import com.gabriel.SpringEcom.model.Product;
 import com.gabriel.SpringEcom.model.User;
 import com.gabriel.SpringEcom.repo.CartRepo;
 import com.gabriel.SpringEcom.repo.ProductRepo;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
-
-import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
@@ -66,8 +64,32 @@ public class CartService {
             cart.getItems().add(newItem);
         }
 
-        Cart savdCart  = cartRepo.save(cart);
-        return mapToCartResponseDTO(savdCart);
+        Cart savedCart  = cartRepo.save(cart);
+        return mapToCartResponseDTO(savedCart);
+    }
+
+    // Criar tratamento de erro personalizado para os deletes
+    @Transactional
+    public void clearCart(User user) {
+        Cart cart = cartRepo.findByUser(user)
+            .orElseThrow(() -> new RuntimeException("Carrinho não encontrado para o usuário"));
+
+        cart.getItems().clear();
+        cartRepo.save(cart);
+    }
+
+    @Transactional
+    public void removeItemFromCart(Long productId, User user) {
+        Cart cart = cartRepo.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("Carrinho não encontrado para o usuário"));
+
+        CartItem item = cart.getItems().stream()
+                .filter(i -> i.getProduct().getId().equals(productId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Item não encontrado no carrinho"));
+
+        cart.getItems().remove(item);
+        cartRepo.save(cart);
     }
 
     private CartResponseDTO mapToCartResponseDTO(Cart cart) {
