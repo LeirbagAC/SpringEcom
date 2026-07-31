@@ -24,6 +24,18 @@ public class CartService {
     private final CartRepo cartRepo;
     private final ProductRepo productRepo;
 
+    @Transactional(readOnly = true)
+    public CartResponseDTO getCart(User loggedUser) {
+        return cartRepo.findByUser(loggedUser)
+                .map(this::mapToCartResponseDTO)
+                .orElseGet(() -> new CartResponseDTO(
+                        loggedUser.getUsername(),
+                        loggedUser.getEmail(),
+                        List.of(),
+                        BigDecimal.ZERO
+                ));
+    }
+
     @Transactional
     public CartResponseDTO addProduct(CartItemRequestDTO request, User loggedUser) {
 
@@ -121,5 +133,4 @@ public class CartService {
                 subTotal
         );
     }
-
 }
