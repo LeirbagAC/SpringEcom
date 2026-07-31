@@ -1,0 +1,20 @@
+# @name listarCartItems
+GET {{host}}//carts
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+POST {{host}}//add
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "productId": 1,
+  "quantity": 1
+}
+
+###
+#@name DeleteCartItem
+DELETE {{host}}//item/1
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
