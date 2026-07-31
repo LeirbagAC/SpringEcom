@@ -26,7 +26,7 @@ public class ProductController {
     }
 
     @GetMapping("/product/{id}")
-    public ResponseEntity<ProductResponseDTO> getProductById(@PathVariable int id) {
+    public ResponseEntity<ProductResponseDTO> getProductById(@PathVariable Long id) {
         ProductResponseDTO product = productService.getProductById(id);
 
         if(product != null) {
@@ -43,7 +43,7 @@ public class ProductController {
     }
 
     @PostMapping(value = "/product/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ProductImageDTO> addProductImage(@PathVariable int id, @RequestParam("file") MultipartFile imageFile) {
+    public ResponseEntity<ProductImageDTO> addProductImage(@PathVariable Long id, @RequestParam("file") MultipartFile imageFile) {
         try{
             ProductImageDTO imageSaved =  productService.addProductImage(id, imageFile);
             return new ResponseEntity<>(imageSaved, HttpStatus.CREATED);
@@ -63,7 +63,7 @@ public class ProductController {
     }
 
     @PutMapping("/product/{id}")
-    public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable int id, @RequestBody ProductRequestDTO productRequest) {
+    public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable Long id, @RequestBody ProductRequestDTO productRequest) {
         ProductResponseDTO updatedProduct = productService.updateProduct(id, productRequest);
         return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
     }
@@ -76,7 +76,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/product/{id}")
-    public ResponseEntity<Void> delete(@PathVariable int id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         productService.delete(id);
         return ResponseEntity.noContent().build();
     }

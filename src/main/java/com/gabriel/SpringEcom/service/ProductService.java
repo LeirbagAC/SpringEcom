@@ -35,7 +35,7 @@ public class ProductService {
                 .toList();
     }
 
-    public ProductResponseDTO getProductById(Integer id) {
+    public ProductResponseDTO getProductById(Long id) {
         Product product = productRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
         return toDTO(product);
@@ -58,7 +58,7 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductImageDTO addProductImage (int productId, MultipartFile image) throws IOException {
+    public ProductImageDTO addProductImage (Long productId, MultipartFile image) throws IOException {
         Product product  = productRepo.findById(productId).orElseThrow(() -> new RuntimeException("Produto não encontrado: " + productId));
 
         ProductImage productImage = new ProductImage();
@@ -78,7 +78,7 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductResponseDTO updateProduct(int id, ProductRequestDTO productRequest) {
+    public ProductResponseDTO updateProduct(Long id, ProductRequestDTO productRequest) {
         Product product  = productRepo.findById(id).orElseThrow(() -> new RuntimeException("Produto não encontrado: " + id));
         applyRequestToProduct(product, productRequest);
         Product updatedProduct = productRepo.save(product); //O save() aqui é redundante por conta do transaction, o Dirty Checking já faria o update, mas para fins educacionais preferir deixar.
@@ -86,7 +86,7 @@ public class ProductService {
     }
 
     @Transactional
-    public void delete(int id) {
+    public void delete(Long id) {
         Product product = productRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Produto não encontrado: " + id));
 
