@@ -27,6 +27,7 @@ public class ProductService {
     private final ProductRepo productRepo;
     private final ProductImageRepo productImageRepo;
     private final UserRepo userRepo;
+    private final CartItemRepo cartItemRepo;
 
     @Transactional(readOnly = true)
     public List<ProductResponseDTO> getAllProducts() {
