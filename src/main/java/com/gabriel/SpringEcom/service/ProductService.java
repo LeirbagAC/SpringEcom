@@ -7,6 +7,7 @@ import com.gabriel.SpringEcom.dto.UserDTO.UserResponseDTO;
 import com.gabriel.SpringEcom.model.Product;
 import com.gabriel.SpringEcom.model.ProductImage;
 import com.gabriel.SpringEcom.model.User;
+import com.gabriel.SpringEcom.repo.CartItemRepo;
 import com.gabriel.SpringEcom.repo.ProductImageRepo;
 import com.gabriel.SpringEcom.repo.ProductRepo;
 import com.gabriel.SpringEcom.repo.UserRepo;
@@ -94,6 +95,7 @@ public class ProductService {
 
         product.setActive(false);
         product.setStockQuantity(0);
+        cartItemRepo.deleteAllByProductId(id);
     }
 
     @Transactional(readOnly = true)
