@@ -38,9 +38,7 @@ public class CartService {
 
     @Transactional
     public CartResponseDTO addProduct(CartItemRequestDTO request, User loggedUser) {
-        if (request.quantity() <= 0) {
-            throw new RuntimeException("Quantidade deve ser maior que zero.");
-        }
+        if (request.quantity() <= 0) throw new RuntimeException("Quantidade deve ser maior que zero.");
 
         //Busca o carrinho do usuário, se não existe ele cria um.
         Cart cart = cartRepo.findByUser(loggedUser).orElseGet(() -> {
@@ -51,6 +49,8 @@ public class CartService {
 
         Product product = productRepo.findById(request.productId())
                 .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+
+        if(!product.isActive()) throw new RuntimeException("Este produto precisa está ativo no catálogo.");
 
         Optional<CartItem> existingItemOpt = cart.getItems().stream()
                 .filter(item -> item.getProduct().getId().equals(product.getId()))

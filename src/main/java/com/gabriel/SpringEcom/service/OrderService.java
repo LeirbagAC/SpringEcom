@@ -42,6 +42,7 @@ public class OrderService {
         for(CartItem cartItem : cart.getItems()) {
             Product product = cartItem.getProduct();
 
+            if(!product.isActive()) throw new RuntimeException("O produto não está ativo no catálogo: " + product.getName());
             if(product.getStockQuantity() < cartItem.getQuantity()) throw new RuntimeException("Estoque insuficiente para o produto: " + product.getName());
 
             product.setStockQuantity(product.getStockQuantity() - cartItem.getQuantity());
