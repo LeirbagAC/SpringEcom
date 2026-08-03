@@ -86,11 +86,14 @@ public class ProductService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void deleteProductById(Long id, User loggedUser) {
         Product product = productRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Produto não encontrado: " + id));
 
-        productRepo.delete(product);
+        if(!product.getUser().getId().equals(loggedUser.getId())) throw new RuntimeException("Usuário não autorizado a deletar este produto");
+
+        product.setActive(false);
+        product.setStockQuantity(0);
     }
 
     @Transactional(readOnly = true)
@@ -148,7 +151,6 @@ public class ProductService {
         product.setBrand(request.brand());
         product.setPrice(request.price());
         product.setCategory(request.category());
-        product.setProductAvailable(request.productAvailable());
         product.setStockQuantity(request.stockQuantity());
     }
 }

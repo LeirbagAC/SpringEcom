@@ -26,6 +26,7 @@ public class Product {
     private LocalDate releaseDate;
     private boolean productAvailable;
     private int stockQuantity;
+    private boolean active =  true;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -33,4 +34,11 @@ public class Product {
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL,  orphanRemoval = true)
     private List<ProductImage> images = new ArrayList<>();
+
+    //Esses callbacks só são executados quando a entidade é persistida pelo JPA/Hibernate, mas uma atualização direta por JPQL ou SQL
+    @PrePersist
+    @PreUpdate
+    public void syncAvailability() {
+        this.productAvailable = this.stockQuantity > 0;
+    }
 }

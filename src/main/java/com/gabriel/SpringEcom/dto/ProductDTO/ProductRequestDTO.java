@@ -8,6 +8,5 @@ public record ProductRequestDTO(
         String brand,
         BigDecimal price,
         String category,
-        boolean productAvailable,
         int stockQuantity
 ) {}

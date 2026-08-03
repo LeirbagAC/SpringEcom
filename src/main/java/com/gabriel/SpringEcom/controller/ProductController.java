@@ -3,11 +3,13 @@ package com.gabriel.SpringEcom.controller;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductImageDTO;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductRequestDTO;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductResponseDTO;
+import com.gabriel.SpringEcom.security.UserPrincipal;
 import com.gabriel.SpringEcom.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -76,8 +78,8 @@ public class ProductController {
     }
 
     @DeleteMapping("/product/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        productService.delete(id);
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        productService.deleteProductById(id, userPrincipal.getUser());
         return ResponseEntity.noContent().build();
     }
 }
