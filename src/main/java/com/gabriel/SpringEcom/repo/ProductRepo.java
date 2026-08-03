@@ -12,6 +12,8 @@ import java.util.Optional;
 @Repository
 public interface ProductRepo extends JpaRepository<Product, Long> {
 
+    List<Product> findByActiveTrue();
+
     @Query("SELECT p FROM Product p WHERE p.active = true AND (" +
             "LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +

@@ -30,7 +30,7 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public List<ProductResponseDTO> getAllProducts() {
-        return productRepo.findAll()
+        return productRepo.findByActiveTrue()
                 .stream()
                 .map(this::toDTO)
                 .toList();
