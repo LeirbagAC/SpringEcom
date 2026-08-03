@@ -15,12 +15,12 @@ public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne
-    private Product product;
     private int quantity;
     private BigDecimal totalPrice;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Product product;
+
     @ManyToOne(fetch = FetchType.LAZY)
     private Order order;
-
 }
