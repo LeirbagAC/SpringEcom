@@ -23,6 +23,7 @@ public class User {
     private String username;
     private String email;
     private String password;
+    private boolean active = true;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products = new ArrayList<>();

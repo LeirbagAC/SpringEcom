@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,9 +53,9 @@ public class UserController {
         return ResponseEntity.ok(new AuthResponse(token));
     }
 
-    @DeleteMapping("/user/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        userService.deleteUser(id);
+    @DeleteMapping("/delete")
+    public ResponseEntity<Void> delete(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+        userService.deleteCurrentUser(userPrincipal.getUser());
         return ResponseEntity.noContent().build();
     }
 

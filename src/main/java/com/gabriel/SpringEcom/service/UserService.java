@@ -13,9 +13,11 @@ public class UserService {
     private final UserRepo userRepository;
 
     @Transactional
-    public void deleteUser(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado: " + id));
-        userRepository.delete(user);
+    public void deleteCurrentUser(User loggedUser) {
+        User user = userRepository.findById(loggedUser.getId())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado: " + loggedUser.getId()));
+
+        user.setActive(false);
+        user.getProducts().forEach(product -> product.setActive(false));
     }
 }
