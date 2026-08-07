@@ -1,5 +1,6 @@
 package com.gabriel.SpringEcom.model;
 
+import com.gabriel.SpringEcom.model.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,6 +25,9 @@ public class User {
     private String email;
     private String password;
     private boolean active = true;
+
+    @Enumerated(EnumType.STRING)
+    private Role role = Role.USER;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products = new ArrayList<>();

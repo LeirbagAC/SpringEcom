@@ -1,4 +1,4 @@
-package com.gabriel.SpringEcom.controller;
+package com.gabriel.SpringEcom.controller.authController;
 
 import com.gabriel.SpringEcom.dto.UserDTO.AuthResponse;
 import com.gabriel.SpringEcom.dto.UserDTO.LoginRequest;
