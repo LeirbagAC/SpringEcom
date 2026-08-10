@@ -1,11 +1,13 @@
 package com.gabriel.SpringEcom.service;
 
+import com.gabriel.SpringEcom.dto.UserDTO.ChangePasswordRequestDTO;
 import com.gabriel.SpringEcom.dto.UserDTO.UserProfileResponseDTO;
 import com.gabriel.SpringEcom.dto.UserDTO.UserProfileUpdateRequestDTO;
 import com.gabriel.SpringEcom.model.User;
 import com.gabriel.SpringEcom.model.enums.Role;
 import com.gabriel.SpringEcom.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepo userRepo;
+    private final PasswordEncoder  passwordEncoder;
 
     @Transactional(readOnly = true)
     public UserProfileResponseDTO getProfile(Long id) {
@@ -51,6 +54,17 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado: " + id));
 
         user.setRole(newRole);
+    }
+
+    @Transactional
+    public void changePassword(Long userId, ChangePasswordRequestDTO request) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+
+        if (!passwordEncoder.matches(request.oldPassword(), user.getPassword())) throw new RuntimeException("Senha atual incorreta.");
+        if(request.oldPassword().equals(request.newPassword())) throw new RuntimeException("A nova senha não pode ser igual à senha atual.");
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
     }
 
     private UserProfileResponseDTO mapToProfileResponse(User user) {

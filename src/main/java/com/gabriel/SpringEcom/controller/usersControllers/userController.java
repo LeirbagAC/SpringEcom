@@ -1,5 +1,6 @@
 package com.gabriel.SpringEcom.controller.usersControllers;
 
+import com.gabriel.SpringEcom.dto.UserDTO.ChangePasswordRequestDTO;
 import com.gabriel.SpringEcom.dto.UserDTO.UserProfileResponseDTO;
 import com.gabriel.SpringEcom.dto.UserDTO.UserProfileUpdateRequestDTO;
 import com.gabriel.SpringEcom.dto.UserDTO.UserProfileUpdateResponseDTO;
@@ -41,6 +42,12 @@ public class userController {
         );
 
         return ResponseEntity.ok(new UserProfileUpdateResponseDTO(profileResponse, newToken));
+    }
+
+    @PatchMapping("/password")
+    public ResponseEntity<Void> changePassword(@RequestBody ChangePasswordRequestDTO request, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        userService.changePassword(userPrincipal.getUser().getId(), request);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping
