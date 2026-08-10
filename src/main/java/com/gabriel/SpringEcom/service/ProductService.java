@@ -3,7 +3,7 @@ package com.gabriel.SpringEcom.service;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductRequestDTO;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductResponseDTO;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductImageDTO;
-import com.gabriel.SpringEcom.dto.UserDTO.UserResponseDTO;
+import com.gabriel.SpringEcom.dto.UserDTO.SellerSummaryDTO;
 import com.gabriel.SpringEcom.model.Product;
 import com.gabriel.SpringEcom.model.ProductImage;
 import com.gabriel.SpringEcom.model.User;
@@ -129,8 +129,8 @@ public class ProductService {
         );
     }
 
-    private UserResponseDTO toDTOUser(User user) {
-        return new UserResponseDTO(
+    private SellerSummaryDTO toDTOUser(User user) {
+        return new SellerSummaryDTO(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail()
