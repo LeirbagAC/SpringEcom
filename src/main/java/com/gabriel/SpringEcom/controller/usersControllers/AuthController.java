@@ -1,19 +1,14 @@
 package com.gabriel.SpringEcom.controller.usersControllers;
 
-import com.gabriel.SpringEcom.dto.UserDTO.AuthResponse;
-import com.gabriel.SpringEcom.dto.UserDTO.LoginRequest;
-import com.gabriel.SpringEcom.dto.UserDTO.RegisterRequest;
-import com.gabriel.SpringEcom.model.User;
+import com.gabriel.SpringEcom.dto.UserDTO.AuthResponseDTO;
+import com.gabriel.SpringEcom.dto.UserDTO.LoginRequestDTO;
+import com.gabriel.SpringEcom.dto.UserDTO.RegisterRequestDTO;
 import com.gabriel.SpringEcom.model.enums.Role;
-import com.gabriel.SpringEcom.repo.UserRepo;
-import com.gabriel.SpringEcom.security.JwtService;
-import com.gabriel.SpringEcom.security.UserPrincipal;
+import com.gabriel.SpringEcom.service.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -22,46 +17,23 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class  AuthController {
 
-    private final UserRepo userRepository;
-    private final JwtService jwtService;
-    private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
+    private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
-        User user = new User();
-        user.setUsername(request.username());
-        user.setEmail(request.email());
-        user.setPassword(passwordEncoder.encode(request.password()));
-        userRepository.save(user);
-
-        String token = jwtService.generateToken(new UserPrincipal(user));
-        return ResponseEntity.ok(new AuthResponse(token));
+    public ResponseEntity<AuthResponseDTO> register(@Valid @RequestBody RegisterRequestDTO request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(authService.register(request, Role.USER));
     }
 
     @PostMapping("/seller/register")
-    public ResponseEntity<AuthResponse> sellerRegister(@RequestBody RegisterRequest request) {
-        User user = new User();
-        user.setUsername(request.username());
-        user.setEmail(request.email());
-        user.setPassword(passwordEncoder.encode(request.password()));
-        user.setRole(Role.SELLER);
-        userRepository.save(user);
-
-        String token = jwtService.generateToken(new UserPrincipal(user));
-        return ResponseEntity.ok(new AuthResponse(token));
+    public ResponseEntity<AuthResponseDTO> sellerRegister(@Valid @RequestBody RegisterRequestDTO request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(authService.register(request, Role.SELLER));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.email(), request.password())
-        );
-
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        String token = jwtService.generateToken(userPrincipal);
-
-        return ResponseEntity.ok(new AuthResponse(token));
+    public ResponseEntity<AuthResponseDTO> login(@Valid @RequestBody LoginRequestDTO request) {
+        return ResponseEntity.ok(authService.login(request));
     }
 
 }
