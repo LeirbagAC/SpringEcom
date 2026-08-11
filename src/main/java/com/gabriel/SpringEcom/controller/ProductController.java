@@ -28,9 +28,9 @@ public class ProductController {
         return new ResponseEntity<>(productService.getAllProducts(), HttpStatus.ACCEPTED);
     }
 
-    @GetMapping("/product/{id}")
-    public ResponseEntity<ProductResponseDTO> getProductById(@PathVariable Long id) {
-        ProductResponseDTO product = productService.getProductById(id);
+    @GetMapping("/product/{productId}")
+    public ResponseEntity<ProductResponseDTO> getProductById(@PathVariable Long productId) {
+        ProductResponseDTO product = productService.getProductById(productId);
 
         if(product != null) {
             return new ResponseEntity<>(product, HttpStatus.OK);
@@ -54,9 +54,9 @@ public class ProductController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @GetMapping("/product/images/{id}")
-    public ResponseEntity<List<ProductImageDTO>> getProductImages(@PathVariable Long id) {
-        ProductImageDTO images = productService.getProductImages(id);
+    @GetMapping("/product/images/{imageId}")
+    public ResponseEntity<List<ProductImageDTO>> getProductImages(@PathVariable Long imageId) {
+        ProductImageDTO images = productService.getProductImages(imageId);
 
         if(images != null) {
             return ResponseEntity.ok(List.of(images));
@@ -65,22 +65,21 @@ public class ProductController {
         }
     }
 
-    @PutMapping("/product/{id}")
-    public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable Long id, @RequestBody ProductRequestDTO productRequest) {
-        ProductResponseDTO updatedProduct = productService.updateProduct(id, productRequest);
+    @PutMapping("/product/{productId}")
+    public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable Long productId, @RequestBody ProductRequestDTO productRequest) {
+        ProductResponseDTO updatedProduct = productService.updateProduct(productId, productRequest);
         return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
     }
 
     @GetMapping("/products/search")
     public ResponseEntity<List<ProductResponseDTO>> searchProducts(@RequestParam String keyword) {
         List<ProductResponseDTO> products = productService.searchProducts(keyword);
-
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
 
-    @DeleteMapping("/product/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id, @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        productService.deleteProductById(id, userPrincipal.getUser());
+    @DeleteMapping("/product/{productId}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long productId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        productService.deleteProductById(productId, userPrincipal.getUser());
         return ResponseEntity.noContent().build();
     }
 }

@@ -37,8 +37,8 @@ public class ProductService {
                 .toList();
     }
 
-    public ProductResponseDTO getProductById(Long id) {
-        Product product = productRepo.findById(id)
+    public ProductResponseDTO getProductById(Long productId) {
+        Product product = productRepo.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
         return toDTO(product);
     }
@@ -80,23 +80,23 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductResponseDTO updateProduct(Long id, ProductRequestDTO productRequest) {
-        Product product  = productRepo.findById(id).orElseThrow(() -> new RuntimeException("Produto não encontrado: " + id));
+    public ProductResponseDTO updateProduct(Long productId, ProductRequestDTO productRequest) {
+        Product product  = productRepo.findById(productId).orElseThrow(() -> new RuntimeException("Produto não encontrado: " + productId));
         applyRequestToProduct(product, productRequest);
         Product updatedProduct = productRepo.save(product); //O save() aqui é redundante por conta do transaction, o Dirty Checking já faria o update, mas para fins educacionais preferir deixar.
         return toDTO(updatedProduct);
     }
 
     @Transactional
-    public void deleteProductById(Long id, User loggedUser) {
-        Product product = productRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Produto não encontrado: " + id));
+    public void deleteProductById(Long productId, User loggedUser) {
+        Product product = productRepo.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Produto não encontrado: " + productId));
 
         if(!product.getUser().getId().equals(loggedUser.getId())) throw new RuntimeException("Usuário não autorizado a deletar este produto");
 
         product.setActive(false);
         product.setStockQuantity(0);
-        cartItemRepo.deleteAllByProductId(id);
+        cartItemRepo.deleteAllByProductId(productId);
     }
 
     @Transactional(readOnly = true)
@@ -131,7 +131,7 @@ public class ProductService {
 
     private SellerSummaryDTO toDTOUser(User user) {
         return new SellerSummaryDTO(
-                user.getId(),
+                user.getExternalId(),
                 user.getUsername(),
                 user.getEmail()
         );
