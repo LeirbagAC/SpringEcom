@@ -2,8 +2,10 @@ package com.gabriel.SpringEcom.dto.UserDTO;
 
 import com.gabriel.SpringEcom.model.enums.Role;
 
+import java.util.UUID;
+
 public record UserProfileResponseDTO(
-        Long id,
+        UUID id,
         String username,
         String email,
         Role role,

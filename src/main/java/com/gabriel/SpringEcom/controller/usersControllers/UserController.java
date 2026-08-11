@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController("/user/me")
 @RequiredArgsConstructor
-public class userController {
+public class UserController {
 
     private final UserService userService;
     private final JwtService jwtService;
@@ -34,7 +34,7 @@ public class userController {
         String newToken = jwtService.generateToken(new UserPrincipal(updatedUser));
 
         UserProfileResponseDTO profileResponse = new UserProfileResponseDTO(
-                updatedUser.getId(),
+                updatedUser.getExternalId(),
                 updatedUser.getUsername(),
                 updatedUser.getEmail(),
                 updatedUser.getRole(),

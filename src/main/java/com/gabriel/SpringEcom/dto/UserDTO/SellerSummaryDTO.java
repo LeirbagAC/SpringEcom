@@ -1,7 +1,9 @@
 package com.gabriel.SpringEcom.dto.UserDTO;
 
+import java.util.UUID;
+
 public record SellerSummaryDTO(
-        Long id,
+        UUID id,
         String name,
         String email
 ) {}

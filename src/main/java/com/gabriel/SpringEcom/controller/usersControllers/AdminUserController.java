@@ -9,15 +9,17 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
+
 @RestController("/admin/users")
 @RequiredArgsConstructor
-public class adminUserController {
+public class AdminUserController {
 
     private final UserService userService;
 
-    @PatchMapping("/{id}/role")
-    public ResponseEntity<Void> changeUserRole(@PathVariable Long id, @RequestBody ChangeRoleDTO request) {
-        userService.changeRole(id, request.newRole());
+    @PatchMapping("/{externalId}/role")
+    public ResponseEntity<Void> changeUserRole(@PathVariable UUID externalId, @RequestBody ChangeRoleDTO request) {
+        userService.changeRole(externalId, request.newRole());
         return ResponseEntity.noContent().build();
     }
 

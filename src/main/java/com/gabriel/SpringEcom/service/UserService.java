@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +22,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserProfileResponseDTO getProfile(Long id) {
         User user = userRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado: " + id));
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
         return mapToProfileResponse(user);
     }
 
@@ -49,9 +50,9 @@ public class UserService {
     }
 
     @Transactional
-    public void changeRole(Long id, Role newRole) {
-        User user = userRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado: " + id));
+    public void changeRole(UUID externalId, Role newRole) {
+        User user = userRepo.findByExternalId(externalId)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
 
         user.setRole(newRole);
     }
@@ -69,7 +70,7 @@ public class UserService {
 
     private UserProfileResponseDTO mapToProfileResponse(User user) {
         return new UserProfileResponseDTO(
-                user.getId(),
+                user.getExternalId(),
                 user.getUsername(),
                 user.getEmail(),
                 user.getRole(),
