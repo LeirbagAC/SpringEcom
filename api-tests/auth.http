@@ -5,7 +5,7 @@ Content-Type: application/json
 {
   "username": "Gabriel",
   "email": "gabriel@gmail.com",
-  "password": "123"
+  "password": "123456"
 }
 
 ### Realizar Login e Capturar o Token JWT para poder ser usado em outras requisições de teste

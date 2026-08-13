@@ -1,0 +1,10 @@
+# @name FazerPedido
+POST {{host}}///orders/place
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+# @name PegarPedidos
+GET {{host}}///orders
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
