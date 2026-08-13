@@ -1,15 +1,23 @@
 package com.gabriel.SpringEcom.service;
 
+import com.gabriel.SpringEcom.dto.OrderDTO.OrderItemResponse;
+import com.gabriel.SpringEcom.dto.OrderDTO.OrderResponse;
 import com.gabriel.SpringEcom.dto.UserDTO.ChangePasswordRequestDTO;
+import com.gabriel.SpringEcom.dto.UserDTO.RegisterRequestDTO;
 import com.gabriel.SpringEcom.dto.UserDTO.UserProfileResponseDTO;
 import com.gabriel.SpringEcom.dto.UserDTO.UserProfileUpdateRequestDTO;
+import com.gabriel.SpringEcom.model.Order;
+import com.gabriel.SpringEcom.model.OrderItem;
 import com.gabriel.SpringEcom.model.User;
 import com.gabriel.SpringEcom.model.enums.Role;
+import com.gabriel.SpringEcom.repo.OrderRepo;
 import com.gabriel.SpringEcom.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -18,6 +26,7 @@ public class UserService {
 
     private final UserRepo userRepo;
     private final PasswordEncoder  passwordEncoder;
+    private  final OrderRepo orderRepo;
 
     @Transactional(readOnly = true)
     public UserProfileResponseDTO getProfile(Long id) {
@@ -49,13 +58,6 @@ public class UserService {
         user.getProducts().forEach(product -> product.setActive(false));
     }
 
-    @Transactional
-    public void changeRole(UUID externalId, Role newRole) {
-        User user = userRepo.findByExternalId(externalId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
-
-        user.setRole(newRole);
-    }
 
     @Transactional
     public void changePassword(Long userId, ChangePasswordRequestDTO request) {
@@ -68,6 +70,62 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(request.newPassword()));
     }
 
+    // --- ADMIN SERVICES
+
+    @Transactional
+    public void changeRole(UUID externalId, Role newRole) {
+        User user = userRepo.findByExternalId(externalId)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+
+        if (user.getRole() == Role.ADMIN) throw new RuntimeException("Não é permitido alterar o role de um Administrador.");
+
+        user.setRole(newRole);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserProfileResponseDTO> searchUsers(String keyword) {
+        List<User> users = userRepo.searchByKeyword(keyword);
+        return users.stream()
+                .map(this::mapToProfileResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderResponse> getAllOrdersByUser(UUID externalId) {
+        User user = userRepo.findByExternalId(externalId)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+
+        List<Order> orders = orderRepo.findAllByUserExternalId(externalId);
+
+        return orders.stream()
+                .map(this::mapToOrderResponse)
+                .toList();
+    }
+
+    @Transactional
+    public UserProfileResponseDTO createUser(RegisterRequestDTO request) {
+        if (userRepo.existsByEmail(request.email())) throw new RuntimeException("Este e-mail já está em uso por outra conta.");
+
+        User newUser = new User();
+        newUser.setUsername(request.username());
+        newUser.setEmail(request.email());
+        newUser.setPassword(passwordEncoder.encode("SenhaPadrão123"));
+
+        User savedUser =  userRepo.save(newUser);
+        return mapToProfileResponse(savedUser);
+    }
+
+    @Transactional
+    public void deleteUser(UUID externalId) {
+        User user = userRepo.findByExternalId(externalId)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+
+        if (user.getRole() == Role.ADMIN) throw new RuntimeException("Não é permitido deletar um Administrador.");
+
+        user.setActive(false);
+        user.getProducts().forEach(product -> product.setActive(false));
+    }
+
     private UserProfileResponseDTO mapToProfileResponse(User user) {
         return new UserProfileResponseDTO(
                 user.getExternalId(),
@@ -76,5 +134,32 @@ public class UserService {
                 user.getRole(),
                 user.isActive()
         );
+    }
+
+    private OrderResponse mapToOrderResponse(Order order) {
+        List<OrderItemResponse> itemResponses = new ArrayList<>();
+        if (order.getOrderItems() != null) {
+            for (OrderItem item : order.getOrderItems()) {
+                if (item.getProduct() == null) {
+                    continue;
+                }
+
+                itemResponses.add(new OrderItemResponse(
+                        item.getProduct().getName(),
+                        item.getTotalPrice(),
+                        item.getQuantity()
+                ));
+            }
+        }
+
+        return new OrderResponse(
+                order.getOrderId(),
+                order.getCustomName(),
+                order.getEmail(),
+                order.getStatus(),
+                order.getOrderDate(),
+                itemResponses
+        );
+
     }
 }
