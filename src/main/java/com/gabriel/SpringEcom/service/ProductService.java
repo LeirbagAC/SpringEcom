@@ -3,7 +3,7 @@ package com.gabriel.SpringEcom.service;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductRequestDTO;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductResponseDTO;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductImageDTO;
-import com.gabriel.SpringEcom.dto.UserDTO.SellerSummaryDTO;
+import com.gabriel.SpringEcom.mappers.ProductMapper;
 import com.gabriel.SpringEcom.model.Product;
 import com.gabriel.SpringEcom.model.ProductImage;
 import com.gabriel.SpringEcom.model.User;
@@ -28,19 +28,20 @@ public class ProductService {
     private final ProductImageRepo productImageRepo;
     private final UserRepo userRepo;
     private final CartItemRepo cartItemRepo;
+    private final ProductMapper productMapper;
 
     @Transactional(readOnly = true)
     public List<ProductResponseDTO> getAllProducts() {
         return productRepo.findByActiveTrue()
                 .stream()
-                .map(this::toDTO)
+                .map(productMapper::mapToProductResponseDTO)
                 .toList();
     }
 
     public ProductResponseDTO getProductById(Long productId) {
         Product product = productRepo.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
-        return toDTO(product);
+        return productMapper.mapToProductResponseDTO(product);
     }
 
     @Transactional
@@ -51,12 +52,12 @@ public class ProductService {
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado: " + userEmail));
 
         Product product = new Product();
-        applyRequestToProduct(product, request);
+        productMapper.updateProductFromRequest(request, product);
         product.setReleaseDate(java.time.LocalDate.now());
         product.setUser(user);
 
         Product savedProduct = productRepo.save(product);
-        return toDTO(savedProduct);
+        return productMapper.mapToProductResponseDTO(savedProduct);
     }
 
     @Transactional
@@ -71,20 +72,20 @@ public class ProductService {
         productImage.setProduct(product);
 
         ProductImage savedProductImage = productImageRepo.save(productImage);
-        return toDTOImage(savedProductImage);
+        return productMapper.mapToProductImageDTO(savedProductImage);
     }
 
     public ProductImageDTO getProductImages(Long imageId) {
         ProductImage productImage = productImageRepo.findById(imageId).orElseThrow(() -> new RuntimeException("Imagem não encontrada: " + imageId));
-        return toDTOImage(productImage);
+        return productMapper.mapToProductImageDTO(productImage);
     }
 
     @Transactional
     public ProductResponseDTO updateProduct(Long productId, ProductRequestDTO productRequest) {
         Product product  = productRepo.findById(productId).orElseThrow(() -> new RuntimeException("Produto não encontrado: " + productId));
-        applyRequestToProduct(product, productRequest);
+        productMapper.updateProductFromRequest(productRequest, product);
         Product updatedProduct = productRepo.save(product); //O save() aqui é redundante por conta do transaction, o Dirty Checking já faria o update, mas para fins educacionais preferir deixar.
-        return toDTO(updatedProduct);
+        return productMapper.mapToProductResponseDTO(updatedProduct);
     }
 
     @Transactional
@@ -103,57 +104,7 @@ public class ProductService {
     public List<ProductResponseDTO> searchProducts(String keyword) {
         return productRepo.searchProducts(keyword)
                 .stream()
-                .map(this::toDTO)
+                .map(productMapper::mapToProductResponseDTO)
                 .toList();
-    }
-
-    // --- Métodos privados auxiliar na conversão dos DTOs
-    private ProductResponseDTO toDTO(Product product) {
-        List<ProductImageDTO> imageDTOs = product.getImages().stream().map(image ->
-                new ProductImageDTO(
-                        image.getId(),
-                        image.getImageName(),
-                        image.getImageType(),
-                        "http://localhost:8080/product/image/" + image.getId()
-                )
-        ).toList();
-
-        return new ProductResponseDTO(
-                product.getId(),
-                product.getName(),
-                product.getDescription(),
-                product.getPrice(),
-                product.isProductAvailable(),
-                toDTOUser(product.getUser()),
-                imageDTOs
-        );
-    }
-
-    private SellerSummaryDTO toDTOUser(User user) {
-        return new SellerSummaryDTO(
-                user.getExternalId(),
-                user.getUsername(),
-                user.getEmail()
-        );
-    }
-
-    private ProductImageDTO toDTOImage(ProductImage savedProductImage) {
-        return new ProductImageDTO(
-                savedProductImage.getId(),
-                savedProductImage.getImageName(),
-                savedProductImage.getImageType(),
-                "http://localhost:8080/product/image/" + savedProductImage.getId()
-        );
-    }
-
-    //Funçao criada para ajuda na hora de atualizar o produto, para não precisar ficar setando cada campo manualmente
-    //Provavelmente não apenasa esse método, mas também os outros podem ser refatorada com alguma lib (ModelMapper ou MapStruct) para fazer isso de forma automática, mas por enquanto vai assim
-    private void applyRequestToProduct(Product product, ProductRequestDTO request) {
-        product.setName(request.name());
-        product.setDescription(request.description());
-        product.setBrand(request.brand());
-        product.setPrice(request.price());
-        product.setCategory(request.category());
-        product.setStockQuantity(request.stockQuantity());
     }
 }

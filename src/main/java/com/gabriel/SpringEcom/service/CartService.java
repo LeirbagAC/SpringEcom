@@ -1,8 +1,8 @@
 package com.gabriel.SpringEcom.service;
 
 import com.gabriel.SpringEcom.dto.CartDTO.CartItemRequestDTO;
-import com.gabriel.SpringEcom.dto.CartDTO.CartItemResponseDTO;
 import com.gabriel.SpringEcom.dto.CartDTO.CartResponseDTO;
+import com.gabriel.SpringEcom.mappers.CartMapper;
 import com.gabriel.SpringEcom.model.Cart;
 import com.gabriel.SpringEcom.model.CartItem;
 import com.gabriel.SpringEcom.model.Product;
@@ -23,11 +23,12 @@ public class CartService {
 
     private final CartRepo cartRepo;
     private final ProductRepo productRepo;
+    private final CartMapper cartMapper;
 
     @Transactional(readOnly = true)
     public CartResponseDTO getCart(User loggedUser) {
         return cartRepo.findByUser(loggedUser)
-                .map(this::mapToCartResponseDTO)
+                .map(cartMapper::mapToCartResponseDTO)
                 .orElseGet(() -> new CartResponseDTO(
                         loggedUser.getUsername(),
                         loggedUser.getEmail(),
@@ -80,10 +81,9 @@ public class CartService {
         }
 
         Cart savedCart  = cartRepo.save(cart);
-        return mapToCartResponseDTO(savedCart);
+        return cartMapper.mapToCartResponseDTO(savedCart);
     }
 
-    // Criar tratamento de erro personalizado para os deletes
     @Transactional
     public void clearCart(User user) {
         Cart cart = cartRepo.findByUser(user)
@@ -105,35 +105,5 @@ public class CartService {
 
         cart.getItems().remove(item);
         cartRepo.save(cart);
-    }
-
-    private CartResponseDTO mapToCartResponseDTO(Cart cart) {
-        List<CartItemResponseDTO> items = cart.getItems().stream()
-                .map(this::mapToItemDTO)
-                .toList();
-
-        BigDecimal totalPrice = items.stream()
-                .map(CartItemResponseDTO::subtotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        return new CartResponseDTO(
-                cart.getUser().getUsername(),
-                cart.getUser().getEmail(),
-                items,
-                totalPrice
-        );
-    }
-
-    private CartItemResponseDTO mapToItemDTO(CartItem item) {
-        BigDecimal unitPrice = item.getProduct().getPrice();
-        BigDecimal subTotal = item.getProduct().getPrice().multiply(new BigDecimal(item.getQuantity()));
-
-        return new CartItemResponseDTO(
-                item.getProduct().getId(),
-                item.getProduct().getName(),
-                item.getQuantity(),
-                unitPrice,
-                subTotal
-        );
     }
 }

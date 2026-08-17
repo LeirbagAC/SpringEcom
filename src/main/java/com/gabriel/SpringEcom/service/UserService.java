@@ -6,6 +6,7 @@ import com.gabriel.SpringEcom.dto.UserDTO.RegisterRequestDTO;
 import com.gabriel.SpringEcom.dto.UserDTO.UserProfileResponseDTO;
 import com.gabriel.SpringEcom.dto.UserDTO.UserProfileUpdateRequestDTO;
 import com.gabriel.SpringEcom.mappers.OrderMapper;
+import com.gabriel.SpringEcom.mappers.ProfileMapper;
 import com.gabriel.SpringEcom.model.Order;
 import com.gabriel.SpringEcom.model.User;
 import com.gabriel.SpringEcom.model.enums.Role;
@@ -26,12 +27,13 @@ public class UserService {
     private final PasswordEncoder  passwordEncoder;
     private  final OrderRepo orderRepo;
     private  final OrderMapper orderMapper;
+    private  final ProfileMapper profileMapper;
 
     @Transactional(readOnly = true)
     public UserProfileResponseDTO getProfile(Long id) {
         User user = userRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
-        return mapToProfileResponse(user);
+        return profileMapper.mapToProfileResponse(user);
     }
 
     @Transactional
@@ -84,9 +86,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public List<UserProfileResponseDTO> searchUsers(String keyword) {
         List<User> users = userRepo.searchByKeyword(keyword);
-        return users.stream()
-                .map(this::mapToProfileResponse)
-                .toList();
+        return profileMapper.toProfileResponseList(users);
     }
 
     @Transactional(readOnly = true)
@@ -109,7 +109,7 @@ public class UserService {
         newUser.setPassword(passwordEncoder.encode("SenhaPadrão123"));
 
         User savedUser =  userRepo.save(newUser);
-        return mapToProfileResponse(savedUser);
+        return profileMapper.mapToProfileResponse(savedUser);
     }
 
     @Transactional
@@ -121,15 +121,5 @@ public class UserService {
 
         user.setActive(false);
         user.getProducts().forEach(product -> product.setActive(false));
-    }
-
-    private UserProfileResponseDTO mapToProfileResponse(User user) {
-        return new UserProfileResponseDTO(
-                user.getExternalId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getRole(),
-                user.isActive()
-        );
     }
 }
