@@ -1,13 +1,12 @@
 package com.gabriel.SpringEcom.service;
 
-import com.gabriel.SpringEcom.dto.OrderDTO.OrderItemResponse;
 import com.gabriel.SpringEcom.dto.OrderDTO.OrderResponse;
 import com.gabriel.SpringEcom.dto.UserDTO.ChangePasswordRequestDTO;
 import com.gabriel.SpringEcom.dto.UserDTO.RegisterRequestDTO;
 import com.gabriel.SpringEcom.dto.UserDTO.UserProfileResponseDTO;
 import com.gabriel.SpringEcom.dto.UserDTO.UserProfileUpdateRequestDTO;
+import com.gabriel.SpringEcom.mappers.OrderMapper;
 import com.gabriel.SpringEcom.model.Order;
-import com.gabriel.SpringEcom.model.OrderItem;
 import com.gabriel.SpringEcom.model.User;
 import com.gabriel.SpringEcom.model.enums.Role;
 import com.gabriel.SpringEcom.repo.OrderRepo;
@@ -16,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,6 +25,7 @@ public class UserService {
     private final UserRepo userRepo;
     private final PasswordEncoder  passwordEncoder;
     private  final OrderRepo orderRepo;
+    private  final OrderMapper orderMapper;
 
     @Transactional(readOnly = true)
     public UserProfileResponseDTO getProfile(Long id) {
@@ -97,9 +96,7 @@ public class UserService {
 
         List<Order> orders = orderRepo.findAllByUserExternalId(externalId);
 
-        return orders.stream()
-                .map(this::mapToOrderResponse)
-                .toList();
+        return orderMapper.toOrderResponseList(orders);
     }
 
     @Transactional
@@ -134,32 +131,5 @@ public class UserService {
                 user.getRole(),
                 user.isActive()
         );
-    }
-
-    private OrderResponse mapToOrderResponse(Order order) {
-        List<OrderItemResponse> itemResponses = new ArrayList<>();
-        if (order.getOrderItems() != null) {
-            for (OrderItem item : order.getOrderItems()) {
-                if (item.getProduct() == null) {
-                    continue;
-                }
-
-                itemResponses.add(new OrderItemResponse(
-                        item.getProduct().getName(),
-                        item.getTotalPrice(),
-                        item.getQuantity()
-                ));
-            }
-        }
-
-        return new OrderResponse(
-                order.getOrderId(),
-                order.getCustomName(),
-                order.getEmail(),
-                order.getStatus(),
-                order.getOrderDate(),
-                itemResponses
-        );
-
     }
 }

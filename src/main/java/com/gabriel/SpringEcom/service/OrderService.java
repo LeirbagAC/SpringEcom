@@ -1,7 +1,7 @@
 package com.gabriel.SpringEcom.service;
 
+import com.gabriel.SpringEcom.mappers.OrderMapper;
 import com.gabriel.SpringEcom.model.*;
-import com.gabriel.SpringEcom.dto.OrderDTO.OrderItemResponse;
 import com.gabriel.SpringEcom.dto.OrderDTO.OrderResponse;
 import com.gabriel.SpringEcom.repo.CartRepo;
 import com.gabriel.SpringEcom.repo.OrderRepo;
@@ -21,6 +21,7 @@ public class OrderService {
 
     private final OrderRepo orderRepo;
     private final CartRepo cartRepo;
+    private final OrderMapper orderMapper;
 
     @Transactional
     public OrderResponse placeOrder(User loggedUser) {
@@ -62,42 +63,12 @@ public class OrderService {
         Order savedOrder =  orderRepo.save(order);
         cart.getItems().clear();
 
-        return mapToOrderResponse(savedOrder);
+        return orderMapper.toOrderResponse(savedOrder);
     }
 
     @Transactional(readOnly = true)
     public List<OrderResponse> getAllOrderResponses() {
-        return orderRepo.findAll().stream()
-                .map(this::mapToOrderResponse)
-                .toList();
-
-    }
-
-    //Para converte para o formato do DTO
-    private OrderResponse mapToOrderResponse(Order order) {
-        List<OrderItemResponse> itemResponses = new ArrayList<>();
-        if (order.getOrderItems() != null) {
-            for (OrderItem item : order.getOrderItems()) {
-                if (item.getProduct() == null) {
-                    continue;
-                }
-
-                itemResponses.add(new OrderItemResponse(
-                        item.getProduct().getName(),
-                        item.getTotalPrice(),
-                        item.getQuantity()
-                ));
-            }
-        }
-
-        return new OrderResponse(
-                order.getOrderId(),
-                order.getCustomName(),
-                order.getEmail(),
-                order.getStatus(),
-                order.getOrderDate(),
-                itemResponses
-        );
-
+        List<Order> orders = orderRepo.findAll();
+        return orderMapper.toOrderResponseList(orders);
     }
 }
