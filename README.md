@@ -1,5 +1,7 @@
 # Spring Boot E-Commerce API (SpringEcom)
 
+🚧 **Aviso:** Este projeto está passando por uma refatoração e expansão de funcionalidades. A documentação atual está completamente desatualizada e será atualizada em breve. 
+
 Este é um projeto de uma API RESTful desenvolvida com **Java 21** e **Spring Boot**, que simula o ecossistema básico do backend de um e-commerce. A aplicação gerencia um catálogo completo de produtos com suporte a upload de imagens e processamento de pedidos com cálculo dinâmico de valores e controle de inventário.
 
 ---

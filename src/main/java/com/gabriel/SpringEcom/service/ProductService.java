@@ -51,6 +51,7 @@ public class ProductService {
         User user = userRepo.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado: " + userEmail));
 
+        //O produto é criado vazio, e o mapper vai preencher os campos com base no request DTO, assim reaproveita o método de update que já existe, evitando duplicação de código.
         Product product = new Product();
         productMapper.updateProductFromRequest(request, product);
         product.setReleaseDate(java.time.LocalDate.now());
