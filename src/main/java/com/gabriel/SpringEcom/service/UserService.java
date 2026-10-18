@@ -5,9 +5,12 @@ import com.gabriel.SpringEcom.dto.UserDTO.ChangePasswordRequestDTO;
 import com.gabriel.SpringEcom.dto.UserDTO.RegisterRequestDTO;
 import com.gabriel.SpringEcom.dto.UserDTO.UserProfileResponseDTO;
 import com.gabriel.SpringEcom.dto.UserDTO.UserProfileUpdateRequestDTO;
+import com.gabriel.SpringEcom.exceptions.BusinessRuleException;
+import com.gabriel.SpringEcom.exceptions.EmailAlreadyInUseException;
+import com.gabriel.SpringEcom.exceptions.ForbiddenOperationException;
+import com.gabriel.SpringEcom.exceptions.NotFoundException;
 import com.gabriel.SpringEcom.mappers.OrderMapper;
 import com.gabriel.SpringEcom.mappers.ProfileMapper;
-import com.gabriel.SpringEcom.model.Order;
 import com.gabriel.SpringEcom.model.User;
 import com.gabriel.SpringEcom.model.enums.Role;
 import com.gabriel.SpringEcom.repo.OrderRepo;
@@ -31,18 +34,15 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserProfileResponseDTO getProfile(Long id) {
-        User user = userRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
-        return profileMapper.mapToProfileResponse(user);
+        return profileMapper.mapToProfileResponse(getUserById(id));
     }
 
     @Transactional
     public User updateProfile(Long userId, UserProfileUpdateRequestDTO request) {
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+        User user = getUserById(userId);
 
         if (!user.getEmail().equals(request.email()) && userRepo.findByEmail(request.email()).isPresent()) {
-            throw new RuntimeException("Este e-mail já está em uso por outra conta.");
+            throw new EmailAlreadyInUseException();
         }
 
         user.setUsername(request.username());
@@ -52,21 +52,16 @@ public class UserService {
 
     @Transactional
     public void deleteCurrentUser(User loggedUser) {
-        User user = userRepo.findById(loggedUser.getId())
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado: " + loggedUser.getId()));
-
-        user.setActive(false);
-        user.getProducts().forEach(product -> product.setActive(false));
+        deactivate(getUserById(loggedUser.getId()));
     }
 
 
     @Transactional
     public void changePassword(Long userId, ChangePasswordRequestDTO request) {
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+        User user = getUserById(userId);
 
-        if (!passwordEncoder.matches(request.oldPassword(), user.getPassword())) throw new RuntimeException("Senha atual incorreta.");
-        if(request.oldPassword().equals(request.newPassword())) throw new RuntimeException("A nova senha não pode ser igual à senha atual.");
+        if (!passwordEncoder.matches(request.oldPassword(), user.getPassword())) throw new BusinessRuleException("Senha atual incorreta.");
+        if(request.oldPassword().equals(request.newPassword())) throw new BusinessRuleException("A nova senha não pode ser igual à senha atual.");
 
         user.setPassword(passwordEncoder.encode(request.newPassword()));
     }
@@ -75,33 +70,28 @@ public class UserService {
 
     @Transactional
     public void changeRole(UUID externalId, Role newRole) {
-        User user = userRepo.findByExternalId(externalId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
-
-        if (user.getRole() == Role.ADMIN) throw new RuntimeException("Não é permitido alterar o role de um Administrador.");
-
+        User user = getUserByExternalId(externalId);
+        if (user.getRole() == Role.ADMIN) throw new ForbiddenOperationException("Não é permitido alterar o role de um Administrador.");
         user.setRole(newRole);
     }
 
     @Transactional(readOnly = true)
     public List<UserProfileResponseDTO> searchUsers(String keyword) {
-        List<User> users = userRepo.searchByKeyword(keyword);
-        return profileMapper.toProfileResponseList(users);
+        return profileMapper.toProfileResponseList(userRepo.searchByKeyword(keyword));
+
     }
 
     @Transactional(readOnly = true)
     public List<OrderResponse> getAllOrdersByUser(UUID externalId) {
-        User user = userRepo.findByExternalId(externalId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
-
-        List<Order> orders = orderRepo.findAllByUserExternalId(externalId);
-
-        return orderMapper.toOrderResponseList(orders);
+        if (!userRepo.existsByExternalId(externalId)) {
+            throw new NotFoundException("Usuário", externalId);
+        }
+        return orderMapper.toOrderResponseList(orderRepo.findAllByUserExternalId(externalId));
     }
 
     @Transactional
     public UserProfileResponseDTO createUser(RegisterRequestDTO request) {
-        if (userRepo.existsByEmail(request.email())) throw new RuntimeException("Este e-mail já está em uso por outra conta.");
+        if (userRepo.existsByEmail(request.email())) throw new EmailAlreadyInUseException();
 
         User newUser = new User();
         newUser.setUsername(request.username());
@@ -113,12 +103,28 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUser(UUID externalId) {
-        User user = userRepo.findByExternalId(externalId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+    public void deleteUserById(UUID externalId) {
+        User user = getUserByExternalId(externalId);
 
-        if (user.getRole() == Role.ADMIN) throw new RuntimeException("Não é permitido deletar um Administrador.");
+        if (user.getRole() == Role.ADMIN) throw new ForbiddenOperationException("Não é permitido deletar um Administrador.");
 
+        user.setActive(false);
+        user.getProducts().forEach(product -> product.setActive(false));
+    }
+
+    //Métodos auxiliares
+
+    public User getUserById(Long id) {
+        return userRepo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Usuário", id));
+    }
+
+    private User getUserByExternalId(UUID externalId) {
+        return userRepo.findByExternalId(externalId)
+                .orElseThrow(() -> new NotFoundException("Usuário", externalId));
+    }
+
+    private void deactivate(User user) {
         user.setActive(false);
         user.getProducts().forEach(product -> product.setActive(false));
     }

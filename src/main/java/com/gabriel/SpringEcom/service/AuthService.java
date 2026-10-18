@@ -3,6 +3,7 @@ package com.gabriel.SpringEcom.service;
 import com.gabriel.SpringEcom.dto.UserDTO.AuthResponseDTO;
 import com.gabriel.SpringEcom.dto.UserDTO.LoginRequestDTO;
 import com.gabriel.SpringEcom.dto.UserDTO.RegisterRequestDTO;
+import com.gabriel.SpringEcom.exceptions.EmailAlreadyInUseException;
 import com.gabriel.SpringEcom.model.User;
 import com.gabriel.SpringEcom.model.enums.Role;
 import com.gabriel.SpringEcom.repo.UserRepo;
@@ -27,7 +28,7 @@ public class AuthService {
 
     @Transactional
     public AuthResponseDTO register(RegisterRequestDTO request, Role role) {
-        if(userRepo.existsByEmail(request.email())) throw new RuntimeException("Email já cadastrado no sistema.");
+        if(userRepo.existsByEmail(request.email())) throw new EmailAlreadyInUseException();
 
         User user = new User();
         user.setUsername(request.username());

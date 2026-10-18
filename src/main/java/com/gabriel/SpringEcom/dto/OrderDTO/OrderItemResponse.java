@@ -5,6 +5,6 @@ import java.math.BigDecimal;
 public record OrderItemResponse(
         String productName,
         BigDecimal totalPrice,
-        int quantity
+        Integer quantity
 ) {
 }

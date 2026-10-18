@@ -2,6 +2,9 @@ package com.gabriel.SpringEcom.service;
 
 import com.gabriel.SpringEcom.dto.CartDTO.CartItemRequestDTO;
 import com.gabriel.SpringEcom.dto.CartDTO.CartResponseDTO;
+import com.gabriel.SpringEcom.exceptions.InactiveProductException;
+import com.gabriel.SpringEcom.exceptions.InsufficientStockException;
+import com.gabriel.SpringEcom.exceptions.NotFoundException;
 import com.gabriel.SpringEcom.mappers.CartMapper;
 import com.gabriel.SpringEcom.model.Cart;
 import com.gabriel.SpringEcom.model.CartItem;
@@ -39,69 +42,63 @@ public class CartService {
 
     @Transactional
     public CartResponseDTO addProduct(CartItemRequestDTO request, User loggedUser) {
-        if (request.quantity() <= 0) throw new RuntimeException("Quantidade deve ser maior que zero.");
 
-        //Busca o carrinho do usuário, se não existe ele cria um.
+        Product product = productRepo.findById(request.productId())
+                .orElseThrow(() -> new NotFoundException("Produto", request.productId()));
+
+        if (!product.isActive()) {
+            throw new InactiveProductException(product.getId());
+        }
+
         Cart cart = cartRepo.findByUser(loggedUser).orElseGet(() -> {
             Cart newCart = new Cart();
             newCart.setUser(loggedUser);
             return cartRepo.save(newCart);
         });
 
-        Product product = productRepo.findById(request.productId())
-                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
-
-        if(!product.isActive()) throw new RuntimeException("Este produto precisa está ativo no catálogo.");
-
         Optional<CartItem> existingItemOpt = cart.getItems().stream()
                 .filter(item -> item.getProduct().getId().equals(product.getId()))
                 .findFirst(); //"Assim que o primeiro item passar pelo filtro, pare tudo e me entregue ele"
 
-        if(existingItemOpt.isPresent()) {
-            CartItem existingItem = existingItemOpt.get();
-            int newQuantity = existingItem.getQuantity() + request.quantity();
+        // Quantidade total que o carrinho terá após a adição
+        int quantityInCart = existingItemOpt.map(CartItem::getQuantity).orElse(0);
+        int newQuantity = quantityInCart + request.quantity();
 
-            if(newQuantity > product.getStockQuantity() ) {
-                throw new RuntimeException("Estoque insuficiente para a quantidade solicitada.");
-            }
-            existingItem.setQuantity(newQuantity);
+        if (newQuantity > product.getStockQuantity()) {
+            throw new InsufficientStockException(
+                    product.getName(), product.getStockQuantity(), newQuantity);
+        }
 
+        if (existingItemOpt.isPresent()) {
+            existingItemOpt.get().setQuantity(newQuantity);
         } else {
-
-            if(request.quantity() > product.getStockQuantity()) {
-                throw new RuntimeException("Estoque insuficiente.");
-            }
-
             CartItem newItem = new CartItem();
             newItem.setCart(cart);
             newItem.setProduct(product);
             newItem.setQuantity(request.quantity());
-
             cart.getItems().add(newItem);
         }
 
-        Cart savedCart  = cartRepo.save(cart);
-        return cartMapper.mapToCartResponseDTO(savedCart);
+        return cartMapper.mapToCartResponseDTO(cartRepo.save(cart));
     }
 
     @Transactional
     public void clearCart(User user) {
-        Cart cart = cartRepo.findByUser(user)
-            .orElseThrow(() -> new RuntimeException("Carrinho não encontrado para o usuário"));
-
-        cart.getItems().clear();
-        cartRepo.save(cart);
+        cartRepo.findByUser(user).ifPresent(cart -> {
+            cart.getItems().clear();
+            cartRepo.save(cart);
+        });
     }
 
     @Transactional
     public void removeItemFromCart(Long productId, User user) {
         Cart cart = cartRepo.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("Carrinho não encontrado para o usuário"));
+                .orElseThrow(() -> new NotFoundException("Carrinho", user.getId()));
 
         CartItem item = cart.getItems().stream()
                 .filter(i -> i.getProduct().getId().equals(productId))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Item não encontrado no carrinho"));
+                .orElseThrow(() -> new NotFoundException("Item do carrinho", productId));
 
         cart.getItems().remove(item);
         cartRepo.save(cart);

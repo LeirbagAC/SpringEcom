@@ -3,6 +3,8 @@ package com.gabriel.SpringEcom.service;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductRequestDTO;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductResponseDTO;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductImageDTO;
+import com.gabriel.SpringEcom.exceptions.ForbiddenOperationException;
+import com.gabriel.SpringEcom.exceptions.NotFoundException;
 import com.gabriel.SpringEcom.mappers.ProductMapper;
 import com.gabriel.SpringEcom.model.Product;
 import com.gabriel.SpringEcom.model.ProductImage;
@@ -40,7 +42,7 @@ public class ProductService {
 
     public ProductResponseDTO getProductById(Long productId) {
         Product product = productRepo.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+                .orElseThrow(() -> new NotFoundException("Produto", productId));
         return productMapper.mapToProductResponseDTO(product);
     }
 
@@ -49,7 +51,7 @@ public class ProductService {
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
 
         User user = userRepo.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado: " + userEmail));
+                .orElseThrow(() -> new NotFoundException("Usuário", userEmail));
 
         //O produto é criado vazio, e o mapper vai preencher os campos com base no request DTO, assim reaproveita o método de update que já existe, evitando duplicação de código.
         Product product = new Product();
@@ -63,7 +65,7 @@ public class ProductService {
 
     @Transactional
     public ProductImageDTO addProductImage (Long productId, MultipartFile image) throws IOException {
-        Product product  = productRepo.findById(productId).orElseThrow(() -> new RuntimeException("Produto não encontrado: " + productId));
+        Product product  = productRepo.findById(productId).orElseThrow(() -> new NotFoundException("Produto", productId));
 
         ProductImage productImage = new ProductImage();
 
@@ -77,13 +79,13 @@ public class ProductService {
     }
 
     public ProductImageDTO getProductImages(Long imageId) {
-        ProductImage productImage = productImageRepo.findById(imageId).orElseThrow(() -> new RuntimeException("Imagem não encontrada: " + imageId));
+        ProductImage productImage = productImageRepo.findById(imageId).orElseThrow(() -> new NotFoundException("Imagem", imageId));
         return productMapper.mapToProductImageDTO(productImage);
     }
 
     @Transactional
     public ProductResponseDTO updateProduct(Long productId, ProductRequestDTO productRequest) {
-        Product product  = productRepo.findById(productId).orElseThrow(() -> new RuntimeException("Produto não encontrado: " + productId));
+        Product product  = productRepo.findById(productId).orElseThrow(() -> new NotFoundException("Produto", productId));
         productMapper.updateProductFromRequest(productRequest, product);
         Product updatedProduct = productRepo.save(product); //O save() aqui é redundante por conta do transaction, o Dirty Checking já faria o update, mas para fins educacionais preferir deixar.
         return productMapper.mapToProductResponseDTO(updatedProduct);
@@ -92,9 +94,9 @@ public class ProductService {
     @Transactional
     public void deleteProductById(Long productId, User loggedUser) {
         Product product = productRepo.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Produto não encontrado: " + productId));
+                .orElseThrow(() -> new NotFoundException("Produto", productId));
 
-        if(!product.getUser().getId().equals(loggedUser.getId())) throw new RuntimeException("Usuário não autorizado a deletar este produto");
+        if(!product.getUser().getId().equals(loggedUser.getId())) throw ForbiddenOperationException.notOwner("produto");
 
         product.setActive(false);
         product.setStockQuantity(0);

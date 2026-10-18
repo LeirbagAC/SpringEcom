@@ -1,5 +1,9 @@
 package com.gabriel.SpringEcom.service;
 
+import com.gabriel.SpringEcom.exceptions.EmptyCartException;
+import com.gabriel.SpringEcom.exceptions.InactiveProductException;
+import com.gabriel.SpringEcom.exceptions.InsufficientStockException;
+import com.gabriel.SpringEcom.exceptions.NotFoundException;
 import com.gabriel.SpringEcom.mappers.OrderMapper;
 import com.gabriel.SpringEcom.model.*;
 import com.gabriel.SpringEcom.dto.OrderDTO.OrderResponse;
@@ -26,9 +30,9 @@ public class OrderService {
     @Transactional
     public OrderResponse placeOrder(User loggedUser) {
         Cart cart = cartRepo.findByUser(loggedUser)
-                .orElseThrow(() -> new RuntimeException("Carrinho não encontrado"));
+                .orElseThrow(() -> new NotFoundException("Carrinho", loggedUser.getExternalId()));
 
-        if(cart.getItems().isEmpty()) throw new RuntimeException("Não é possível finalizar a compra com o carrinho vazio.");
+        if(cart.getItems().isEmpty()) throw new EmptyCartException();
 
         Order order = new Order();
         String orderId = "ORD" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
@@ -43,8 +47,8 @@ public class OrderService {
         for(CartItem cartItem : cart.getItems()) {
             Product product = cartItem.getProduct();
 
-            if(!product.isActive()) throw new RuntimeException("O produto não está ativo no catálogo: " + product.getName());
-            if(product.getStockQuantity() < cartItem.getQuantity()) throw new RuntimeException("Estoque insuficiente para o produto: " + product.getName());
+            if(!product.isActive()) throw new InactiveProductException(product.getId());
+            if(product.getStockQuantity() < cartItem.getQuantity()) throw new InsufficientStockException(product.getName(), product.getStockQuantity(), cartItem.getQuantity());
 
             product.setStockQuantity(product.getStockQuantity() - cartItem.getQuantity());
 //            productRepo.save(product); Novamente, isso é redundante por conta do Dirty Checking causado pelo Transactional
@@ -67,8 +71,8 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrderResponse> getAllOrderResponses() {
-        List<Order> orders = orderRepo.findAll();
+    public List<OrderResponse> getAllOrderResponses(User loggedUser) {
+        List<Order> orders = orderRepo.findByUser(loggedUser);
         return orderMapper.toOrderResponseList(orders);
     }
 }

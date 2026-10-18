@@ -5,11 +5,11 @@ import com.gabriel.SpringEcom.dto.ProductDTO.ProductRequestDTO;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductResponseDTO;
 import com.gabriel.SpringEcom.security.UserPrincipal;
 import com.gabriel.SpringEcom.service.ProductService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,7 +40,7 @@ public class ProductController {
     }
 
     @PostMapping("/product")
-    public ResponseEntity<ProductResponseDTO> addProduct(@RequestBody ProductRequestDTO productRequest) {
+    public ResponseEntity<ProductResponseDTO> addProduct(@Valid @RequestBody ProductRequestDTO productRequest) {
         ProductResponseDTO savedProduct = productService.addProduct(productRequest);
         return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
     }
@@ -66,7 +66,7 @@ public class ProductController {
     }
 
     @PutMapping("/product/{productId}")
-    public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable Long productId, @RequestBody ProductRequestDTO productRequest) {
+    public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable Long productId, @Valid @RequestBody ProductRequestDTO productRequest) {
         ProductResponseDTO updatedProduct = productService.updateProduct(productId, productRequest);
         return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
     }
