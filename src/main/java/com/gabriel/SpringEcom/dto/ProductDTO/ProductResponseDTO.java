@@ -1,6 +1,6 @@
 package com.gabriel.SpringEcom.dto.ProductDTO;
 
-import com.gabriel.SpringEcom.dto.UserDTO.SellerSummaryDTO;
+import com.gabriel.SpringEcom.dto.UserDTO.SellerSummaryResponseDTO;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -11,6 +11,6 @@ public record ProductResponseDTO(
         String description,
         BigDecimal price,
         boolean productAvailable,
-        SellerSummaryDTO seller,
-        List<ProductImageDTO> images
+        SellerSummaryResponseDTO seller,
+        List<ProductImageResponseDTO> images
 ) {}

@@ -1,6 +1,6 @@
 package com.gabriel.SpringEcom.service;
 
-import com.gabriel.SpringEcom.dto.OrderDTO.OrderResponse;
+import com.gabriel.SpringEcom.dto.OrderDTO.OrderResponseDTO;
 import com.gabriel.SpringEcom.dto.UserDTO.ChangePasswordRequestDTO;
 import com.gabriel.SpringEcom.dto.UserDTO.RegisterRequestDTO;
 import com.gabriel.SpringEcom.dto.UserDTO.UserProfileResponseDTO;
@@ -84,7 +84,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrderResponse> getAllOrdersByUser(UUID externalId) {
+    public List<OrderResponseDTO> getAllOrdersByUser(UUID externalId) {
         if (!userRepo.existsByExternalId(externalId)) {
             throw new NotFoundException("Usuário", externalId);
         }

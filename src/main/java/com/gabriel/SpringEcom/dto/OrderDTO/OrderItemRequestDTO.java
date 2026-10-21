@@ -2,7 +2,7 @@ package com.gabriel.SpringEcom.dto.OrderDTO;
 
 import jakarta.validation.constraints.NotNull;
 
-public record OrderItemRequest(
+public record OrderItemRequestDTO(
         Long productId,
 
         @NotNull

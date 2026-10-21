@@ -1,7 +1,7 @@
 package com.gabriel.SpringEcom.mappers;
 
-import com.gabriel.SpringEcom.dto.OrderDTO.OrderItemResponse;
-import com.gabriel.SpringEcom.dto.OrderDTO.OrderResponse;
+import com.gabriel.SpringEcom.dto.OrderDTO.OrderItemResponseDTO;
+import com.gabriel.SpringEcom.dto.OrderDTO.OrderResponseDTO;
 import com.gabriel.SpringEcom.model.Order;
 import com.gabriel.SpringEcom.model.OrderItem;
 import org.mapstruct.Mapper;
@@ -13,14 +13,14 @@ public interface OrderMapper {
 
     @Mapping(source = "customName", target = "customerName")
     @Mapping(source = "orderItems", target = "items")
-    OrderResponse toOrderResponse(Order order);
+    OrderResponseDTO toOrderResponse(Order order);
 
     @Mapping(source = "product.name", target = "productName")
-    OrderItemResponse toOrderItemResponse(OrderItem item);
+    OrderItemResponseDTO toOrderItemResponse(OrderItem item);
 
-    List<OrderResponse> toOrderResponseList(List<Order> orders);
+    List<OrderResponseDTO> toOrderResponseList(List<Order> orders);
 
-    default List<OrderItemResponse> mapOrderItems(List<OrderItem> items) {
+    default List<OrderItemResponseDTO> mapOrderItems(List<OrderItem> items) {
         if (items == null) {
             return null;
         }

@@ -6,7 +6,7 @@ import com.gabriel.SpringEcom.exceptions.InsufficientStockException;
 import com.gabriel.SpringEcom.exceptions.NotFoundException;
 import com.gabriel.SpringEcom.mappers.OrderMapper;
 import com.gabriel.SpringEcom.model.*;
-import com.gabriel.SpringEcom.dto.OrderDTO.OrderResponse;
+import com.gabriel.SpringEcom.dto.OrderDTO.OrderResponseDTO;
 import com.gabriel.SpringEcom.repo.CartRepo;
 import com.gabriel.SpringEcom.repo.OrderRepo;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class OrderService {
     private final OrderMapper orderMapper;
 
     @Transactional
-    public OrderResponse placeOrder(User loggedUser) {
+    public OrderResponseDTO placeOrder(User loggedUser) {
         Cart cart = cartRepo.findByUser(loggedUser)
                 .orElseThrow(() -> new NotFoundException("Carrinho", loggedUser.getExternalId()));
 
@@ -73,7 +73,7 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public Page<OrderResponse> getAllOrderResponses(User loggedUser, Pageable pageable) {
+    public Page<OrderResponseDTO> getAllOrderResponses(User loggedUser, Pageable pageable) {
         return orderRepo.findByUser(loggedUser, pageable)
                 .map(orderMapper::toOrderResponse);
     }

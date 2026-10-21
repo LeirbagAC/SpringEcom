@@ -1,6 +1,6 @@
 package com.gabriel.SpringEcom.controller.usersControllers;
 
-import com.gabriel.SpringEcom.dto.OrderDTO.OrderResponse;
+import com.gabriel.SpringEcom.dto.OrderDTO.OrderResponseDTO;
 import com.gabriel.SpringEcom.dto.UserDTO.RegisterRequestDTO;
 import com.gabriel.SpringEcom.dto.UserDTO.UserProfileResponseDTO;
 import com.gabriel.SpringEcom.model.enums.ChangeRoleDTO;
@@ -39,8 +39,8 @@ public class AdminUserController {
     }
 
     @GetMapping("/orders/{externalId}")
-    public ResponseEntity<List<OrderResponse>> getAllOrdersByUser(@PathVariable UUID externalId) {
-        List<OrderResponse> orders = userService.getAllOrdersByUser(externalId);
+    public ResponseEntity<List<OrderResponseDTO>> getAllOrdersByUser(@PathVariable UUID externalId) {
+        List<OrderResponseDTO> orders = userService.getAllOrdersByUser(externalId);
         return ResponseEntity.ok(orders);
     }
 

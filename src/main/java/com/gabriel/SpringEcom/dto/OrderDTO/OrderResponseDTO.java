@@ -3,12 +3,12 @@ package com.gabriel.SpringEcom.dto.OrderDTO;
 import java.time.LocalDate;
 import java.util.List;
 
-public record OrderResponse(
+public record OrderResponseDTO(
         String orderId,
         String customerName,
         String email,
         String status,
         LocalDate orderDate,
-        List<OrderItemResponse> items
+        List<OrderItemResponseDTO> items
 ) {
 }
