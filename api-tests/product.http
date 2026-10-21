@@ -1,11 +1,10 @@
-# @name listarProdutos
-GET {{host}}/products
+ GET {{host}}/products
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
 ###
 # @name buscarProdutoPorId
-GET {{host}}/product/4
+GET {{host}}/products/4
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
@@ -17,13 +16,13 @@ Authorization: Bearer {{jwt_token}}
 
 ###
 # @name deleteProduto
-DELETE {{host}}/product/2
+DELETE {{host}}/products/2
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
 ### Adicionar produto
 # @name criarProduto
-POST {{host}}/product
+POST {{host}}/products
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
@@ -40,7 +39,7 @@ Authorization: Bearer {{jwt_token}}
 
 ###
 # @name updateProduto
-PUT {{host}}/product/4
+PUT {{host}}/products/4
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 

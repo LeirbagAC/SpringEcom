@@ -5,6 +5,6 @@ Authorization: Bearer {{jwt_token}}
 
 ###
 # @name PegarPedidos
-GET {{host}}///orders
+GET {{host}}///orders/all
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
