@@ -1,6 +1,6 @@
 package com.gabriel.SpringEcom.controller;
 
-import com.gabriel.SpringEcom.dto.ProductDTO.ProductImageDTO;
+import com.gabriel.SpringEcom.dto.ProductDTO.ProductImageResponseDTO;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductRequestDTO;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductResponseDTO;
 import com.gabriel.SpringEcom.security.UserPrincipal;
@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/products")
@@ -45,9 +46,9 @@ public class ProductController {
 
     @GetMapping("/me")
     public PagedModel<ProductResponseDTO> getMyProducts(
-            @AuthenticationPrincipal UserPrincipal principal,
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
             @ParameterObject @PageableDefault(size = 20, sort = "name") Pageable pageable) { //@ParameterObject para deixar a interface do swagger correta
-        return new PagedModel<>(productService.getMyProducts(principal.getUser(), pageable));
+        return new PagedModel<>(productService.getMyProducts(userPrincipal.getUser(), pageable));
     }
 
     @GetMapping("/search")
@@ -87,7 +88,7 @@ public class ProductController {
     }
 
     @PostMapping(value = "/{productId}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ProductImageDTO> addProductImage(
+    public ResponseEntity<ProductImageResponseDTO> addProductImage(
             @PathVariable Long productId,
             @RequestPart("file") MultipartFile imageFile,
             @AuthenticationPrincipal UserPrincipal principal) throws IOException {
@@ -95,13 +96,13 @@ public class ProductController {
                 .body(productService.addProductImage(productId, imageFile, principal.getUser()));
     }
 
-    @GetMapping("{/productId}/images")
-    public PagedModel<ProductImageDTO> getProductImages() {
-
+    @GetMapping("/images/{imageId}")
+    public ProductImageResponseDTO getProductImage(@PathVariable Long imageId) {
+        return productService.getProductImage(imageId);
     }
 
-    @GetMapping("/images/{imageId}")
-    public ProductImageDTO getProductImage(@PathVariable Long imageId) {
-        return productService.getProductImage(imageId);
+    @GetMapping("/{productId}/images")
+    public List<ProductImageResponseDTO> getImagesByProduct(@PathVariable Long productId) {
+        return productService.getImagesByProduct(productId);
     }
 }

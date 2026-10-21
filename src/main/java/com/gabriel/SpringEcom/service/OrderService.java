@@ -10,6 +10,8 @@ import com.gabriel.SpringEcom.dto.OrderDTO.OrderResponse;
 import com.gabriel.SpringEcom.repo.CartRepo;
 import com.gabriel.SpringEcom.repo.OrderRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -71,8 +73,8 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrderResponse> getAllOrderResponses(User loggedUser) {
-        List<Order> orders = orderRepo.findByUser(loggedUser);
-        return orderMapper.toOrderResponseList(orders);
+    public Page<OrderResponse> getAllOrderResponses(User loggedUser, Pageable pageable) {
+        return orderRepo.findByUser(loggedUser, pageable)
+                .map(orderMapper::toOrderResponse);
     }
 }

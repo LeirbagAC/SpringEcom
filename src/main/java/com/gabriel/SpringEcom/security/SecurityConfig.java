@@ -41,7 +41,8 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/swagger-ui/**","/swagger-ui.html","/v3/api-docs/**").permitAll()
 
-                        //Regras de LEITURA (GET) - Liberado para todos
+                        //Regras de LEITURA (GET)
+                        .requestMatchers(HttpMethod.GET, "/products/me").hasRole("SELLER")
                         .requestMatchers(HttpMethod.GET, "/products/**").permitAll()
 
                         // Regras de ESCRITA (POST, PUT, DELETE) - Restrito para SELLER (e ADMIN por hierarquia)

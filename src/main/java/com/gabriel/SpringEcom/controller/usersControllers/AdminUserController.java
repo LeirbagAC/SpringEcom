@@ -5,7 +5,12 @@ import com.gabriel.SpringEcom.dto.UserDTO.RegisterRequestDTO;
 import com.gabriel.SpringEcom.dto.UserDTO.UserProfileResponseDTO;
 import com.gabriel.SpringEcom.model.enums.ChangeRoleDTO;
 import com.gabriel.SpringEcom.service.UserService;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,9 +32,10 @@ public class AdminUserController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<UserProfileResponseDTO>> searchUsers(@RequestParam String keyword) {
-        List<UserProfileResponseDTO> users = userService.searchUsers(keyword);
-        return ResponseEntity.ok(users);
+    public PagedModel<UserProfileResponseDTO> searchUsers(
+            @RequestParam @NotBlank String keyword,
+            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
+        return new PagedModel<>(userService.searchUsers(keyword, pageable));
     }
 
     @GetMapping("/orders/{externalId}")

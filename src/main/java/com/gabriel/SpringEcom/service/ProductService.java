@@ -1,8 +1,8 @@
 package com.gabriel.SpringEcom.service;
 
+import com.gabriel.SpringEcom.dto.ProductDTO.ProductImageResponseDTO;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductRequestDTO;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductResponseDTO;
-import com.gabriel.SpringEcom.dto.ProductDTO.ProductImageDTO;
 import com.gabriel.SpringEcom.exceptions.BusinessRuleException;
 import com.gabriel.SpringEcom.exceptions.ForbiddenOperationException;
 import com.gabriel.SpringEcom.exceptions.NotFoundException;
@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -89,7 +90,7 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductImageDTO addProductImage(Long productId, MultipartFile image, User loggedUser) throws IOException {
+    public ProductImageResponseDTO addProductImage(Long productId, MultipartFile image, User loggedUser) throws IOException {
         Product product = getActiveProduct(productId);
         assertCanModify(product, loggedUser);
         validateImage(image);
@@ -104,10 +105,18 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public ProductImageDTO getProductImage(Long imageId) {
+    public ProductImageResponseDTO getProductImage(Long imageId) {
         ProductImage image = productImageRepo.findById(imageId)
                 .orElseThrow(() -> new NotFoundException("Imagem", imageId));
         return productMapper.mapToProductImageDTO(image);
+    }
+
+    public List<ProductImageResponseDTO> getImagesByProduct(Long productId) {
+        Product product = getActiveProduct(productId);
+        List<ProductImage> images = productImageRepo.findProductImagesByProduct(product);
+        return images.stream()
+                .map(productMapper::mapToProductImageDTO)
+                .toList();
     }
 
     // Métodos Auxiliares

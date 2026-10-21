@@ -16,6 +16,8 @@ import com.gabriel.SpringEcom.model.enums.Role;
 import com.gabriel.SpringEcom.repo.OrderRepo;
 import com.gabriel.SpringEcom.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -76,9 +78,9 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserProfileResponseDTO> searchUsers(String keyword) {
-        return profileMapper.toProfileResponseList(userRepo.searchByKeyword(keyword));
-
+    public Page<UserProfileResponseDTO> searchUsers(String keyword, Pageable pageable) {
+        return userRepo.searchUser(keyword, pageable)
+                .map(profileMapper::mapToProfileResponse);
     }
 
     @Transactional(readOnly = true)
