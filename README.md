@@ -51,12 +51,13 @@ Uma excelente decisão documentada no código (Classe Product em model) foi o en
 | Método | Endpoint | Parâmetros / Body | Descrição |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/api/products` | Nenhum | Retorna todos os produtos cadastrados |
-| `GET` | `/api/product/{id}` | `id` (Path) | Busca os detalhes de um produto específico |
-| `GET` | `/api/product/{id}/image` | `id` (Path) | Retorna exclusivamente os bytes binários da imagem |
+| `GET` | `/api/products/{id}` | `id` (Path) | Busca os detalhes de um produto específico |
+| `GET` | `/api/products/images/{imageId}` | `imageId` (Path) | Busca os metadados de uma imagem |
 | `GET` | `/api/products/search` | `keyword` (Query) | Filtra produtos por palavra-chave (*case-insensitive*) |
-| `POST` | `/api/product` | `Multipart/Form-Data` | Cria um produto enviando dados JSON + arquivo de imagem |
-| `PUT` | `/api/product/{id}` | `Multipart/Form-Data` | Atualiza os dados e a imagem de um produto |
-| `DELETE`| `/api/product/{id}` | `id` (Path) | Remove um produto do catálogo |
+| `POST` | `/api/products` | JSON | Cria um produto |
+| `POST` | `/api/products/{id}/images` | `Multipart/Form-Data` | Adiciona uma imagem ao produto |
+| `PUT` | `/api/products/{id}` | JSON | Atualiza os dados de um produto |
+| `DELETE`| `/api/products/{id}` | `id` (Path) | Desativa um produto do catálogo |
 
 ### 🛒 Pedidos (Orders)
 | Método | Endpoint | Request Body | Descrição |

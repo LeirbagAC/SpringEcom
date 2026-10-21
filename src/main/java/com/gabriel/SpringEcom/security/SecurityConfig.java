@@ -42,12 +42,12 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**","/swagger-ui.html","/v3/api-docs/**").permitAll()
 
                         //Regras de LEITURA (GET) - Liberado para todos
-                        .requestMatchers(HttpMethod.GET, "/product/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/products/**").permitAll()
 
                         // Regras de ESCRITA (POST, PUT, DELETE) - Restrito para SELLER (e ADMIN por hierarquia)
-                        .requestMatchers(HttpMethod.POST, "/product/**").hasRole("SELLER")
-                        .requestMatchers(HttpMethod.PUT, "/product/**").hasRole("SELLER")
-                        .requestMatchers(HttpMethod.DELETE, "/product/**").hasRole("SELLER")
+                        .requestMatchers(HttpMethod.POST, "/products/**").hasRole("SELLER")
+                        .requestMatchers(HttpMethod.PUT, "/products/**").hasRole("SELLER")
+                        .requestMatchers(HttpMethod.DELETE, "/products/**").hasRole("SELLER")
 
                         .requestMatchers("/cart/**").hasRole("USER")
                         .requestMatchers("/admin/**").hasRole("ADMIN")

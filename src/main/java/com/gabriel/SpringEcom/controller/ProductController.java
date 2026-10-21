@@ -6,80 +6,102 @@ import com.gabriel.SpringEcom.dto.ProductDTO.ProductResponseDTO;
 import com.gabriel.SpringEcom.security.UserPrincipal;
 import com.gabriel.SpringEcom.service.ProductService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
 
-@RestController("products")
+@RestController
+@RequestMapping("/products")
 @RequiredArgsConstructor
 public class ProductController {
 
     private final ProductService productService;
 
-    @GetMapping("/products")
-    public ResponseEntity<List<ProductResponseDTO>> getProducts() {
-        return new ResponseEntity<>(productService.getAllProducts(), HttpStatus.ACCEPTED);
+    @GetMapping
+    public PagedModel<ProductResponseDTO> getProducts(
+            @ParameterObject @PageableDefault(size = 20, sort = "name") Pageable pageable) {
+        return new PagedModel<>(productService.getAllProducts(pageable));
     }
 
-    @GetMapping("/product/{productId}")
-    public ResponseEntity<ProductResponseDTO> getProductById(@PathVariable Long productId) {
-        ProductResponseDTO product = productService.getProductById(productId);
-
-        if(product != null) {
-            return new ResponseEntity<>(product, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    @GetMapping("/me")
+    public PagedModel<ProductResponseDTO> getMyProducts(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @ParameterObject @PageableDefault(size = 20, sort = "name") Pageable pageable) { //@ParameterObject para deixar a interface do swagger correta
+        return new PagedModel<>(productService.getMyProducts(principal.getUser(), pageable));
     }
 
-    @PostMapping("/product")
-    public ResponseEntity<ProductResponseDTO> addProduct(@Valid @RequestBody ProductRequestDTO productRequest) {
-        ProductResponseDTO savedProduct = productService.addProduct(productRequest);
-        return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
+    @GetMapping("/search")
+    public PagedModel<ProductResponseDTO> searchProducts(
+            @RequestParam @NotBlank String keyword,
+            @ParameterObject @PageableDefault(size = 20, sort = "name") Pageable pageable) {
+        return new PagedModel<>(productService.searchProducts(keyword, pageable));
     }
 
-    @PostMapping(value = "/product/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ProductImageDTO> addProductImage(@PathVariable Long id, @RequestParam("file") MultipartFile imageFile) {
-        try{
-            ProductImageDTO imageSaved =  productService.addProductImage(id, imageFile);
-            return new ResponseEntity<>(imageSaved, HttpStatus.CREATED);
-        } catch (IOException e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-    @GetMapping("/product/images/{imageId}")
-    public ResponseEntity<List<ProductImageDTO>> getProductImages(@PathVariable Long imageId) {
-        ProductImageDTO images = productService.getProductImages(imageId);
-
-        if(images != null) {
-            return ResponseEntity.ok(List.of(images));
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    @GetMapping("/{productId}")
+    public ProductResponseDTO getProductById(@PathVariable Long productId) {
+        return productService.getProductById(productId);
     }
 
-    @PutMapping("/product/{productId}")
-    public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable Long productId, @Valid @RequestBody ProductRequestDTO productRequest) {
-        ProductResponseDTO updatedProduct = productService.updateProduct(productId, productRequest);
-        return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
+    @PostMapping
+    public ResponseEntity<ProductResponseDTO> addProduct(
+            @Valid @RequestBody ProductRequestDTO request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(productService.addProduct(request, principal.getUser()));
     }
 
-    @GetMapping("/products/search")
-    public ResponseEntity<List<ProductResponseDTO>> searchProducts(@RequestParam String keyword) {
-        List<ProductResponseDTO> products = productService.searchProducts(keyword);
-        return new ResponseEntity<>(products, HttpStatus.OK);
+    @PutMapping("/{productId}")
+    public ProductResponseDTO updateProduct(
+            @PathVariable Long productId,
+            @Valid @RequestBody ProductRequestDTO request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return productService.updateProduct(productId, request, principal.getUser());
     }
 
-    @DeleteMapping("/product/{productId}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long productId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        productService.deleteProductById(productId, userPrincipal.getUser());
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<Void> deleteProduct(
+            @PathVariable Long productId,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        productService.deleteProductById(productId, principal.getUser());
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(value = "/{productId}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ProductImageDTO> addProductImage(
+            @PathVariable Long productId,
+            @RequestPart("file") MultipartFile imageFile,
+            @AuthenticationPrincipal UserPrincipal principal) throws IOException {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(productService.addProductImage(productId, imageFile, principal.getUser()));
+    }
+
+    @GetMapping("{/productId}/images")
+    public PagedModel<ProductImageDTO> getProductImages() {
+
+    }
+
+    @GetMapping("/images/{imageId}")
+    public ProductImageDTO getProductImage(@PathVariable Long imageId) {
+        return productService.getProductImage(imageId);
     }
 }

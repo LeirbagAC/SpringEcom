@@ -21,7 +21,7 @@ public interface ProductMapper {
     @Mapping(source = "externalId", target = "id")
     SellerSummaryDTO mapToSellerSummaryDTO(User user);
 
-    @Mapping(target = "imageUrl", expression = "java(\"http://localhost:8080/product/image/\" + image.getId())")
+    @Mapping(target = "imageUrl", expression = "java(\"/products/images/\" + image.getId())")
     ProductImageDTO mapToProductImageDTO(ProductImage image);
 
     //void, pois é um recurso definitivo para update que não retorna nada e apenas faz uma "cirugia" no Product que foi passado como parâmetro

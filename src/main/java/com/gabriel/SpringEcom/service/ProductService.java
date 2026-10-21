@@ -3,111 +3,135 @@ package com.gabriel.SpringEcom.service;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductRequestDTO;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductResponseDTO;
 import com.gabriel.SpringEcom.dto.ProductDTO.ProductImageDTO;
+import com.gabriel.SpringEcom.exceptions.BusinessRuleException;
 import com.gabriel.SpringEcom.exceptions.ForbiddenOperationException;
 import com.gabriel.SpringEcom.exceptions.NotFoundException;
 import com.gabriel.SpringEcom.mappers.ProductMapper;
 import com.gabriel.SpringEcom.model.Product;
 import com.gabriel.SpringEcom.model.ProductImage;
 import com.gabriel.SpringEcom.model.User;
+import com.gabriel.SpringEcom.model.enums.Role;
 import com.gabriel.SpringEcom.repo.CartItemRepo;
 import com.gabriel.SpringEcom.repo.ProductImageRepo;
 import com.gabriel.SpringEcom.repo.ProductRepo;
-import com.gabriel.SpringEcom.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class ProductService {
 
+    private static final Set<String> ALLOWED_IMAGE_TYPES = Set.of("image/jpeg", "image/png", "image/webp");
+
     private final ProductRepo productRepo;
     private final ProductImageRepo productImageRepo;
-    private final UserRepo userRepo;
     private final CartItemRepo cartItemRepo;
     private final ProductMapper productMapper;
 
     @Transactional(readOnly = true)
-    public List<ProductResponseDTO> getAllProducts() {
-        return productRepo.findByActiveTrue()
-                .stream()
-                .map(productMapper::mapToProductResponseDTO)
-                .toList();
+    public Page<ProductResponseDTO> getAllProducts(Pageable pageable) {
+        return productRepo.findByActiveTrue(pageable)
+                .map(productMapper::mapToProductResponseDTO);
     }
 
+    @Transactional(readOnly = true)
+    public Page<ProductResponseDTO> getMyProducts(User loggedUser, Pageable pageable) {
+        return productRepo.findByUserAndActiveTrue(loggedUser, pageable)
+                .map(productMapper::mapToProductResponseDTO);
+    }
+
+    @Transactional(readOnly = true)
     public ProductResponseDTO getProductById(Long productId) {
-        Product product = productRepo.findById(productId)
-                .orElseThrow(() -> new NotFoundException("Produto", productId));
+        return productMapper.mapToProductResponseDTO(getActiveProduct(productId));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductResponseDTO> searchProducts(String keyword, Pageable pageable) {
+        return productRepo.searchProducts(keyword.trim(), pageable)
+                .map(productMapper::mapToProductResponseDTO);
+    }
+
+    @Transactional
+    public ProductResponseDTO addProduct(ProductRequestDTO request, User user) {
+        Product product = new Product();
+        productMapper.updateProductFromRequest(request, product);
+        product.setReleaseDate(LocalDate.now());
+        product.setUser(user);
+
+        return productMapper.mapToProductResponseDTO(productRepo.save(product));
+    }
+
+    @Transactional
+    public ProductResponseDTO updateProduct(Long productId, ProductRequestDTO request, User loggedUser) {
+        Product product = getActiveProduct(productId);
+        assertCanModify(product, loggedUser);
+
+        productMapper.updateProductFromRequest(request, product);
         return productMapper.mapToProductResponseDTO(product);
     }
 
     @Transactional
-    public ProductResponseDTO addProduct(ProductRequestDTO request) {
-        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        User user = userRepo.findByEmail(userEmail)
-                .orElseThrow(() -> new NotFoundException("Usuário", userEmail));
-
-        //O produto é criado vazio, e o mapper vai preencher os campos com base no request DTO, assim reaproveita o método de update que já existe, evitando duplicação de código.
-        Product product = new Product();
-        productMapper.updateProductFromRequest(request, product);
-        product.setReleaseDate(java.time.LocalDate.now());
-        product.setUser(user);
-
-        Product savedProduct = productRepo.save(product);
-        return productMapper.mapToProductResponseDTO(savedProduct);
-    }
-
-    @Transactional
-    public ProductImageDTO addProductImage (Long productId, MultipartFile image) throws IOException {
-        Product product  = productRepo.findById(productId).orElseThrow(() -> new NotFoundException("Produto", productId));
-
-        ProductImage productImage = new ProductImage();
-
-        productImage.setImageName(image.getOriginalFilename());
-        productImage.setImageType(image.getContentType());
-        productImage.setImageData(image.getBytes());
-        productImage.setProduct(product);
-
-        ProductImage savedProductImage = productImageRepo.save(productImage);
-        return productMapper.mapToProductImageDTO(savedProductImage);
-    }
-
-    public ProductImageDTO getProductImages(Long imageId) {
-        ProductImage productImage = productImageRepo.findById(imageId).orElseThrow(() -> new NotFoundException("Imagem", imageId));
-        return productMapper.mapToProductImageDTO(productImage);
-    }
-
-    @Transactional
-    public ProductResponseDTO updateProduct(Long productId, ProductRequestDTO productRequest) {
-        Product product  = productRepo.findById(productId).orElseThrow(() -> new NotFoundException("Produto", productId));
-        productMapper.updateProductFromRequest(productRequest, product);
-        Product updatedProduct = productRepo.save(product); //O save() aqui é redundante por conta do transaction, o Dirty Checking já faria o update, mas para fins educacionais preferir deixar.
-        return productMapper.mapToProductResponseDTO(updatedProduct);
-    }
-
-    @Transactional
     public void deleteProductById(Long productId, User loggedUser) {
-        Product product = productRepo.findById(productId)
-                .orElseThrow(() -> new NotFoundException("Produto", productId));
-
-        if(!product.getUser().getId().equals(loggedUser.getId())) throw ForbiddenOperationException.notOwner("produto");
+        Product product = getActiveProduct(productId);
+        assertCanModify(product, loggedUser);
 
         product.setActive(false);
         product.setStockQuantity(0);
         cartItemRepo.deleteAllByProductId(productId);
     }
 
+    @Transactional
+    public ProductImageDTO addProductImage(Long productId, MultipartFile image, User loggedUser) throws IOException {
+        Product product = getActiveProduct(productId);
+        assertCanModify(product, loggedUser);
+        validateImage(image);
+
+        ProductImage productImage = new ProductImage();
+        productImage.setImageName(image.getOriginalFilename());
+        productImage.setImageType(image.getContentType());
+        productImage.setImageData(image.getBytes());
+        productImage.setProduct(product);
+
+        return productMapper.mapToProductImageDTO(productImageRepo.save(productImage));
+    }
+
     @Transactional(readOnly = true)
-    public List<ProductResponseDTO> searchProducts(String keyword) {
-        return productRepo.searchProducts(keyword)
-                .stream()
-                .map(productMapper::mapToProductResponseDTO)
-                .toList();
+    public ProductImageDTO getProductImage(Long imageId) {
+        ProductImage image = productImageRepo.findById(imageId)
+                .orElseThrow(() -> new NotFoundException("Imagem", imageId));
+        return productMapper.mapToProductImageDTO(image);
+    }
+
+    // Métodos Auxiliares
+
+    private Product getActiveProduct(Long productId) {
+        return productRepo.findByIdAndActiveTrue(productId)
+                .orElseThrow(() -> new NotFoundException("Produto", productId));
+    }
+
+    private void assertCanModify(Product product, User loggedUser) {
+        boolean isOwner = product.getUser().getId().equals(loggedUser.getId());
+        boolean isAdmin = loggedUser.getRole() == Role.ADMIN;
+
+        if (!isOwner && !isAdmin) {
+            throw ForbiddenOperationException.notOwner("produto");
+        }
+    }
+
+    private void validateImage(MultipartFile image) {
+        if (image.isEmpty()) {
+            throw new BusinessRuleException("O arquivo de imagem está vazio.");
+        }
+        if (!ALLOWED_IMAGE_TYPES.contains(image.getContentType())) {
+            throw new BusinessRuleException("Formato de imagem não suportado. Use JPEG, PNG ou WebP.");
+        }
     }
 }

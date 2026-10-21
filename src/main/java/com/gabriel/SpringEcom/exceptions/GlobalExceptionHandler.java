@@ -3,6 +3,7 @@ package com.gabriel.SpringEcom.exceptions;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -65,6 +66,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.warn("Falha de autenticação em {}: {}", request.getRequestURI(), ex.getClass().getSimpleName());
         return build(HttpStatus.UNAUTHORIZED, "Não autenticado",
                 "E-mail ou senha incorretos.", request);
+    }
+
+    @ExceptionHandler(PropertyReferenceException.class)
+    public ProblemDetail handleInvalidSort(PropertyReferenceException ex, HttpServletRequest request) {
+        log.warn("Ordenação inválida em {}: {}", request.getRequestURI(), ex.getMessage());
+        return build(HttpStatus.BAD_REQUEST, "Parâmetro inválido",
+                "O campo de ordenação informado não existe.", request);
     }
 
     @Override
