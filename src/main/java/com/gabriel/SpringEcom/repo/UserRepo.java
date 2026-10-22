@@ -14,6 +14,7 @@ public interface UserRepo extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
     boolean existsByEmail(String email);
     Optional<User> findByExternalId(UUID externalId);
+    boolean existsByExternalId(UUID externalId);
 
     @Query("""
         SELECT u FROM User u
@@ -21,6 +22,4 @@ public interface UserRepo extends JpaRepository<User, Long> {
            OR LOWER(u.email)    LIKE LOWER(CONCAT('%', :keyword, '%'))
         """)
     Page<User> searchUser(@Param("keyword") String keyword, Pageable pageable);
-
-    boolean existsByExternalId(UUID externalId);
 }

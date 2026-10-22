@@ -84,11 +84,10 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrderResponseDTO> getAllOrdersByUser(UUID externalId) {
-        if (!userRepo.existsByExternalId(externalId)) {
-            throw new NotFoundException("Usuário", externalId);
-        }
-        return orderMapper.toOrderResponseList(orderRepo.findAllByUserExternalId(externalId));
+    public Page<OrderResponseDTO> getAllOrdersByUser(UUID externalId, Pageable pageable) {
+        if (!userRepo.existsByExternalId(externalId)) throw new NotFoundException("Usuário", externalId);
+        return orderRepo.findAllByUserExternalId(externalId, pageable)
+                .map(orderMapper::toOrderResponse);
     }
 
     @Transactional

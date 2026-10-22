@@ -39,9 +39,10 @@ public class AdminUserController {
     }
 
     @GetMapping("/orders/{externalId}")
-    public ResponseEntity<List<OrderResponseDTO>> getAllOrdersByUser(@PathVariable UUID externalId) {
-        List<OrderResponseDTO> orders = userService.getAllOrdersByUser(externalId);
-        return ResponseEntity.ok(orders);
+    public PagedModel<OrderResponseDTO> getAllOrdersByUser(
+            @PathVariable UUID externalId,
+            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
+        return new PagedModel<>(userService.getAllOrdersByUser(externalId, pageable));
     }
 
     @PostMapping
