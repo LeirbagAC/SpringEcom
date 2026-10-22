@@ -1,0 +1,39 @@
+# @name changeUserRole
+PATCH {{host}}/admin/users/46fd18ab-ed49-46a1-aebb-c19f9d65fb0e/role
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "newRole": "SELLER"
+}
+
+###
+# @name searchUsers
+GET {{host}}/admin/users/search?keyword=Gabriel
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+# @name getUserOrders
+GET {{host}}/admin/users/orders/d6e23a94-e863-4c63-a2f0-b8514581cb73
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+# @name createUser
+POST {{host}}/admin/users
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "username": "Novo Usuário",
+  "email": "novo.usuario@gmail.com",
+  "role": "USER",
+  "password": "123456"
+}
+
+###
+# @name deleteUser
+DELETE {{host}}/admin/users/c38f5cd8-3c52-44cd-9a98-fce096f7bfb1
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}

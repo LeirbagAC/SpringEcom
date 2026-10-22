@@ -1,4 +1,11 @@
- GET {{host}}/products
+# @name listarProdutos
+GET {{host}}/products
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+# @name buscarMeusProdutos
+GET {{host}}/products/me
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
@@ -14,42 +21,63 @@ GET {{host}}/products/search?keyword=ps5
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
-###
+### errado
 # @name deleteProduto
 DELETE {{host}}/products/2
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
-### Adicionar produto
+###
 # @name criarProduto
 POST {{host}}/products
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
 {
-    "name": "ps5 pro",
-    "description": "video game",
-    "brand": "sony",
-    "price": 5300,
-    "category": "eletrônico",
-    "releaseDate": "2026-07-16",
-    "productAvailable": true,
-    "stockQuantity": 13
-}
-
-###
-# @name updateProduto
-PUT {{host}}/products/4
-Content-Type: application/json
-Authorization: Bearer {{jwt_token}}
-
-{
-  "name": "Teste put 4",
+  "name": "ps5 pro",
   "description": "video game",
   "brand": "sony",
   "price": 5300,
   "category": "eletrônico",
-  "releaseDate": "2026-07-16",
-  "productAvailable": true,
   "stockQuantity": 13
 }
+
+### errado
+# @name updateProduto
+PUT {{host}}/products/1
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "name": "final",
+  "description": "video game",
+  "brand": "sony",
+  "price": 5300,
+  "category": "eletrônico",
+  "stockQuantity": 13
+}
+
+###
+# @name adicionarImagemProduto
+POST {{host}}/products/1/images
+Authorization: Bearer {{jwt_token}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="product-image.jpg"
+Content-Type: image/jpeg
+
+< ./product-image.jpg
+--WebAppBoundary--
+
+###
+# @name buscarImagemProduto
+GET {{host}}/products/images/1
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+# @name listarImagensProduto
+GET {{host}}/products/15/images
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}

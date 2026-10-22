@@ -1,9 +1,10 @@
 # @name listarCartItems
-GET {{host}}//cart
+GET {{host}}/cart
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
 ###
+# @name adicionarCartItem
 POST {{host}}/cart/add
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
@@ -14,7 +15,13 @@ Authorization: Bearer {{jwt_token}}
 }
 
 ###
-#@name DeleteCartItem
+# @name DeleteCartItem
 DELETE {{host}}/cart/item/1
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+# @name limparCart
+DELETE {{host}}/cart/items
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}

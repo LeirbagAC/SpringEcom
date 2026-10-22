@@ -1,10 +1,10 @@
 # @name FazerPedido
-POST {{host}}///orders/place
+POST {{host}}/orders/place
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
 ###
 # @name PegarPedidos
-GET {{host}}///orders/all
+GET {{host}}/orders/all
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}

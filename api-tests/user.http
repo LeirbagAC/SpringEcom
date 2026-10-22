@@ -1,0 +1,32 @@
+# @name getProfile
+GET {{host}}/user/me
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+# @name updateProfile
+PUT {{host}}/user/me
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "username": "Gabriel Atualizado",
+  "email": "gabriel.atualizado@gmail.com"
+}
+
+###
+# @name changePassword
+PATCH {{host}}/user/me/password
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "oldPassword": "123456",
+  "newPassword": "654321"
+}
+
+###
+# @name deleteProfile
+DELETE {{host}}/user/me
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
