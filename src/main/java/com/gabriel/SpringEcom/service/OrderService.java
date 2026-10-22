@@ -32,9 +32,8 @@ public class OrderService {
     @Transactional
     public OrderResponseDTO placeOrder(User loggedUser) {
         Cart cart = cartRepo.findByUser(loggedUser)
-                .orElseThrow(() -> new NotFoundException("Carrinho", loggedUser.getExternalId()));
-
-        if(cart.getItems().isEmpty()) throw new EmptyCartException();
+                .filter(c -> !c.getItems().isEmpty())
+                .orElseThrow(EmptyCartException::new);
 
         Order order = new Order();
         String orderId = "ORD" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();

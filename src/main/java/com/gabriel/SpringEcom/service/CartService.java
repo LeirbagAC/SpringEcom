@@ -93,7 +93,7 @@ public class CartService {
     @Transactional
     public void removeItemFromCart(Long productId, User user) {
         Cart cart = cartRepo.findByUser(user)
-                .orElseThrow(() -> new NotFoundException("Carrinho", user.getId()));
+                .orElseThrow(() -> new NotFoundException("Item do carrinho", productId));
 
         CartItem item = cart.getItems().stream()
                 .filter(i -> i.getProduct().getId().equals(productId))
@@ -101,6 +101,5 @@ public class CartService {
                 .orElseThrow(() -> new NotFoundException("Item do carrinho", productId));
 
         cart.getItems().remove(item);
-        cartRepo.save(cart);
     }
 }
