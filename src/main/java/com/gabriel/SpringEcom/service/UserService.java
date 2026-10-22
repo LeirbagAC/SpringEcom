@@ -97,6 +97,7 @@ public class UserService {
         User newUser = new User();
         newUser.setUsername(request.username());
         newUser.setEmail(request.email());
+        newUser.setRole(request.role());
         newUser.setPassword(passwordEncoder.encode("SenhaPadrão123"));
 
         User savedUser =  userRepo.save(newUser);
