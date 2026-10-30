@@ -1,0 +1,7 @@
+services:
+  app:
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+  mysql:
+    ports:
+      - "127.0.0.1:3306:3306"
