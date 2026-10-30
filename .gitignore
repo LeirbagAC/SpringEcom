@@ -34,3 +34,5 @@ build/
 
 ### IntelliJ HTTP Client Env Files
 *.env.json
+
+.env
