@@ -40,6 +40,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/swagger-ui/**","/swagger-ui.html","/v3/api-docs/**").permitAll()
+                        .requestMatchers("/actuator/health/**").permitAll()
 
                         //Regras de LEITURA (GET)
                         .requestMatchers(HttpMethod.GET, "/products/me").hasRole("SELLER")
